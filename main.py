@@ -8,51 +8,104 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QPixmap, QImage
 
+import RPi.GPIO as GPIO
+
 class PreviewThread(QThread):
 	
+	# declare Qt signal
 	sendPixmap = pyqtSignal(QImage)
+	
+	def __init__(self, parent, camera):
+		super(PreviewThread, self).__init__(parent)
+						
+		# announce camera variable for run function to use
+		self.camera = camera
+		
+		# preview variable 
+		self.preview = True
+		
+	def stop_preview(self):
+		self.preview = False
 	
 	def run(self):
 		
-		camera = PiCamera()
-		camera.resolution = (640, 480)
-		camera.framerate = 14
+		capturestream_array = PiRGBArray(self.camera, size = (640, 480))
 		
-		rawCapture = PiRGBArray(camera, size = (640, 480))
-		
-		for frame in camera.capture_continuous(rawCapture, format="rgb", use_video_port=True):
-			# grab the image array
-			img = frame.array
-
-			height, width, bpc = img.shape
-			bpl = bpc*width
-			image = QImage(img.data, width, height, bpl, QImage.Format_RGB888)
-			
-			# send pixmap to update label
-			self.sendPixmap.emit(image)
-		 
-			# clear the stream in preparation for the next frame
-			rawCapture.truncate(0)
+		for frame in self.camera.capture_continuous(capturestream_array, format="rgb", resize=(640, 480), use_video_port=True):
+			if self.preview:
+				
+				# grab the image array
+				img = frame.array
+	
+				height, width, bpc = img.shape
+				bpl = bpc*width
+				image = QImage(img.data, width, height, bpl, QImage.Format_RGB888)
+				
+				# send pixmap to update label
+				self.sendPixmap.emit(image)
+			 
+				# clear the stream in preparation for the next frame
+				capturestream_array.truncate(0)
+				
+			elif not self.preview:
+				break
 			
 class PreviewWindow(QLabel):
 	
-	def __init__(self, parent):
+	def __init__(self, parent, camera):
 		super(PreviewWindow, self).__init__(parent)
-		
+		# set preview window geometry
 		self.resize(640,480)
 		
-		th = PreviewThread(self)
-		th.sendPixmap.connect(self.setImage)
-		th.start()
+		# announce camera object
+		self.camera = camera
+		
+		#~ self.start_thread()
+		
+	def start_thread(self):
+		print("yo in pdubz")
+		# start preview pane thread
+		self.th = PreviewThread(self, self.camera)
+		self.th.sendPixmap.connect(self.setImage)
+		self.th.start()
+		
+	def stop_thread(self):
+		# stop preview pane thread
+		self.th.stop_preview()
 		
 	@pyqtSlot(QImage)
 	def setImage(self, image):
 		self.setPixmap(QPixmap.fromImage(image))
-
+		
+class PreviewButton(QPushButton):
+	
+	def __init__(self, parent):
+		super(PreviewButton, self).__init__('Start Preview Feed', parent)
+		
+		self.parent = parent
+		
+		self.clicked.connect(self.start_preview)
+		
+	def start_preview(self):
+		# start preview thread
+		self.parent.previewwindow.start_thread()
+		
+		# change text and button function
+		self.setText('Stop Preview Feed')
+		
+		
+		
+		
 class MainWindow(QWidget):
 	
 	def __init__(self):
 		super().__init__()
+		
+		# get PiCamera object
+		self.camera = PiCamera()
+		self.camera.framerate = 14
+		
+		# initialise user interface
 		self.initUI()
 	
 	def initUI(self):
@@ -61,15 +114,22 @@ class MainWindow(QWidget):
 		self.setGeometry(50, 50, 640, 580)
 		
 		# preview section layout
-		sublayout_preview = QHBoxLayout()
+		sublayout_preview = QVBoxLayout()
 		
-		self.previewwindow = PreviewWindow(self)
+		self.previewwindow = PreviewWindow(self, self.camera)
 		
+		self.previewbutton = PreviewButton(self)
+				
 		#~ self.cameraselection = QComboBox(self)
-		
-		#~ self.capturebutton = 
-		
+
 		sublayout_preview.addWidget(self.previewwindow)
+		sublayout_preview.addWidget(self.previewbutton)
+		
+		self.setLayout(sublayout_preview)
+		
+	#~ def capture_image(self):
+		#~ camera = PiCamera()
+		#~ camera.capture("happy.jpg")
 
 if __name__ == '__main__':
 	
