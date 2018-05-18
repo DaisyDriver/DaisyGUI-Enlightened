@@ -63,7 +63,6 @@ class PreviewWindow(QLabel):
 		#~ self.start_thread()
 		
 	def start_thread(self):
-		print("yo in pdubz")
 		# start preview pane thread
 		self.th = PreviewThread(self, self.camera)
 		self.th.sendPixmap.connect(self.setImage)
@@ -91,10 +90,18 @@ class PreviewButton(QPushButton):
 		self.parent.previewwindow.start_thread()
 		
 		# change text and button function
+		self.clicked.disconnect()
 		self.setText('Stop Preview Feed')
+		self.clicked.connect(self.stop_preview)
 		
+	def stop_preview(self):
+		# stop preview thread
+		self.parent.previewwindow.stop_thread()
 		
-		
+		# change text and button function
+		self.clicked.disconnect()
+		self.setText('Start Preview Feed')
+		self.clicked.connect(self.start_preview)
 		
 class MainWindow(QWidget):
 	
@@ -116,21 +123,18 @@ class MainWindow(QWidget):
 		# preview section layout
 		sublayout_preview = QVBoxLayout()
 		
+		# initialise widgets
 		self.previewwindow = PreviewWindow(self, self.camera)
-		
 		self.previewbutton = PreviewButton(self)
-				
 		#~ self.cameraselection = QComboBox(self)
 
+		# add widgets to vertical box layout
 		sublayout_preview.addWidget(self.previewwindow)
 		sublayout_preview.addWidget(self.previewbutton)
 		
+		# set sublayout as widget layout
 		self.setLayout(sublayout_preview)
 		
-	#~ def capture_image(self):
-		#~ camera = PiCamera()
-		#~ camera.capture("happy.jpg")
-
 if __name__ == '__main__':
 	
     app = QApplication(sys.argv)
