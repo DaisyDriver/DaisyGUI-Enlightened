@@ -8,8 +8,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QPixmap, QImage
 
-import RPi.GPIO as GPIO
-
 class PreviewThread(QThread):
 	
 	# declare Qt signal
@@ -103,6 +101,37 @@ class PreviewButton(QPushButton):
 		self.setText('Start Preview Feed')
 		self.clicked.connect(self.start_preview)
 		
+class SnapshotButton(QPushButton):
+	
+	def __init__(self, parent):
+		super(SnapshotButton, self).__init__('Take Snapshot', parent)
+		
+		# announce parent to class and set initial button function to start preview
+		self.parent = parent
+		self.clicked.connect(self.take_snapshot)
+		
+	def take_snapshot(self):
+		try:
+			# 1st case - taking picture whilst preview thread running.
+			# temporarily stop preview thread and wait to ensure it's fully complete
+			self.parent.previewwindow.stop_thread()
+			time.sleep(0.2)
+			
+			# take time-stamped picture			
+			current_time = time.strftime("%Y%m%d_time%H%Ms%S")
+			file_name = "Im_"+current_time+".jpg"
+			self.parent.camera.capture(file_name, format="jpeg", use_video_port=False)
+			
+			# re-start preview thread
+			self.parent.previewwindow.start_thread()
+			
+		except AttributeError:
+			# 2nd case - taking picture when preview thread not running.
+			# take time-stamped picture	
+			current_time = time.strftime("%Y%m%d_time%H%Ms%S")
+			file_name = "Im_"+current_time+".jpg"
+			self.parent.camera.capture(file_name, format="jpeg", use_video_port=False)
+			
 class MainWindow(QWidget):
 	
 	def __init__(self):
@@ -110,6 +139,7 @@ class MainWindow(QWidget):
 		
 		# get PiCamera object
 		self.camera = PiCamera()
+		self.camera.resolution = (1640, 1232)
 		self.camera.framerate = 14
 		
 		# initialise user interface
@@ -126,25 +156,16 @@ class MainWindow(QWidget):
 		# initialise widgets
 		self.previewwindow = PreviewWindow(self, self.camera)
 		self.previewbutton = PreviewButton(self)
+		self.snapshotbutton = SnapshotButton(self)
 		#~ self.cameraselection = QComboBox(self)
-		
-		# temporary capture button
-		self.snapbutton = QPushButton("take a pikachoo")
-		self.snapbutton.clicked.connect(self.snapapoo)		
 
 		# add widgets to vertical box layout
 		sublayout_preview.addWidget(self.previewwindow)
 		sublayout_preview.addWidget(self.previewbutton)
-		
-		# temp
-		sublayout_preview.addWidget(self.snapbutton)
+		sublayout_preview.addWidget(self.snapshotbutton)
 		
 		# set sublayout as widget layout
 		self.setLayout(sublayout_preview)
-		
-	def snapapoo(self):
-		print("yeh")
-		self.camera.capture("testpic2.jpg", format="jpeg", use_video_port=False)
 		
 if __name__ == '__main__':
 	
