@@ -81,8 +81,8 @@ class PreviewButton(QPushButton):
 	def __init__(self, parent):
 		super(PreviewButton, self).__init__('Start Preview Feed', parent)
 		
+		# announce parent to class and set initial button function to start preview
 		self.parent = parent
-		
 		self.clicked.connect(self.start_preview)
 		
 	def start_preview(self):
@@ -127,13 +127,24 @@ class MainWindow(QWidget):
 		self.previewwindow = PreviewWindow(self, self.camera)
 		self.previewbutton = PreviewButton(self)
 		#~ self.cameraselection = QComboBox(self)
+		
+		# temporary capture button
+		self.snapbutton = QPushButton("take a pikachoo")
+		self.snapbutton.clicked.connect(self.snapapoo)		
 
 		# add widgets to vertical box layout
 		sublayout_preview.addWidget(self.previewwindow)
 		sublayout_preview.addWidget(self.previewbutton)
 		
+		# temp
+		sublayout_preview.addWidget(self.snapbutton)
+		
 		# set sublayout as widget layout
 		self.setLayout(sublayout_preview)
+		
+	def snapapoo(self):
+		print("yeh")
+		self.camera.capture("testpic2.jpg", format="jpeg", use_video_port=False)
 		
 if __name__ == '__main__':
 	
