@@ -1,53 +1,14 @@
 import sys
 import time
+import threading
 
 from picamera import PiCamera
 from picamera.array import PiRGBArray
 
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QThread, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QPixmap, QImage
 
-class PreviewThread(QThread):
-	
-	# declare Qt signal
-	sendPixmap = pyqtSignal(QImage)
-	
-	def __init__(self, parent, camera):
-		super(PreviewThread, self).__init__(parent)
-						
-		# announce camera variable for run function to use
-		self.camera = camera
-		
-		# preview loop break condition
-		self.preview = True
-		
-	def stop_preview(self):
-		self.preview = False
-	
-	def run(self):
-		
-		capturestream_array = PiRGBArray(self.camera, size = (640, 480))
-		
-		for frame in self.camera.capture_continuous(capturestream_array, format="rgb", resize=(640, 480), use_video_port=True):
-			if self.preview:
-				
-				# grab the image array
-				img = frame.array
-	
-				height, width, bpc = img.shape
-				bpl = bpc*width
-				image = QImage(img.data, width, height, bpl, QImage.Format_RGB888)
-				
-				# send pixmap to update label
-				self.sendPixmap.emit(image)
-			 
-				# clear the stream in preparation for the next frame
-				capturestream_array.truncate(0)
-				
-			elif not self.preview:
-				break
-			
 class PreviewWindow(QLabel):
 	
 	def __init__(self, parent, camera):
@@ -58,22 +19,46 @@ class PreviewWindow(QLabel):
 		# announce camera object
 		self.camera = camera
 		
-		#~ self.start_thread()
-		
-	def start_thread(self):
+		# preview state sentinel
+		self.preview_state = False
+				
+	def start_preview_thread(self):
 		# start preview pane thread
-		self.th = PreviewThread(self, self.camera)
-		self.th.sendPixmap.connect(self.setImage)
-		self.th.start()
+		self.frames_thread = threading.Thread(target = self.frame_getter)
+		self.preview_state = True
+		self.frames_thread.start()
 		
-	def stop_thread(self):
-		# stop preview pane thread
-		self.th.stop_preview()
+	def stop_preview_thread(self):
+		# set preview state variable to false
+		self.preview_state = False
+		self.frames_thread.join()
 		
-	@pyqtSlot(QImage)
-	def setImage(self, image):
+	def update_image(self, image):
 		self.setPixmap(QPixmap.fromImage(image))
-		#~ print("frame updated")
+		
+	def frame_getter(self):
+		# set up bit stream for catching frames
+		capturestream_array = PiRGBArray(self.camera, size = (640, 480))
+
+		for frame in self.camera.capture_continuous(capturestream_array, format="rgb", resize=(640, 480), use_video_port=True):
+			if self.preview_state:
+				
+				# grab the image array
+				img = frame.array
+		
+				height, width, bpc = img.shape
+				bpl = bpc*width
+				image = QImage(img.data, width, height, bpl, QImage.Format_RGB888)
+				
+				# send pixmap to update label
+				self.update_image(image)
+			 
+				# clear the stream in preparation for the next frame
+				capturestream_array.truncate(0)
+				
+			elif not self.preview_state:
+				break
+			
 		
 class PreviewButton(QPushButton):
 	
@@ -86,7 +71,7 @@ class PreviewButton(QPushButton):
 		
 	def start_preview(self):
 		# start preview thread
-		self.parent.previewwindow.start_thread()
+		self.parent.previewwindow.start_preview_thread()
 		
 		# change text and button function
 		self.clicked.disconnect()
@@ -95,7 +80,7 @@ class PreviewButton(QPushButton):
 		
 	def stop_preview(self):
 		# stop preview thread
-		self.parent.previewwindow.stop_thread()
+		self.parent.previewwindow.stop_preview_thread()
 		
 		# change text and button function
 		self.clicked.disconnect()
@@ -112,28 +97,11 @@ class SnapshotButton(QPushButton):
 		self.clicked.connect(self.take_snapshot)
 		
 	def take_snapshot(self):
-		try:
-			# 1st case - taking picture whilst preview thread running.
-			# temporarily stop preview thread and wait to ensure it's fully complete
-			#~ self.parent.previewwindow.stop_thread()
-			#~ time.sleep(0.25)
-			
-			# take time-stamped picture			
-			#~ current_time = time.strftime("%Y%m%d_time%H%Ms%S")
-			#~ file_name = "Im_"+current_time+".jpg"
-			file_name = "Im_2.jpg"
-			self.parent.camera.capture(file_name, format="jpeg", use_video_port=False)
-			
-			# re-start preview thread
-			#~ self.parent.previewwindow.start_thread()
-			
-		except AttributeError:
-			# 2nd case - taking picture when preview thread not running.
-			# take time-stamped picture	
-			#~ current_time = time.strftime("%Y%m%d_time%H%Ms%S")
-			#~ file_name = "Im_"+current_time+".jpg"
-			file_name = "Im_2.jpg"
-			self.parent.camera.capture(file_name, format="jpeg", use_video_port=False)
+		# take time-stamped picture			
+		#~ current_time = time.strftime("%Y%m%d_time%H%Ms%S")
+		#~ file_name = "Im_"+current_time+".jpg"
+		file_name = "Im_2.jpg"
+		self.parent.camera.capture(file_name, format="jpeg", use_video_port=False)
 			
 class MainWindow(QWidget):
 	
