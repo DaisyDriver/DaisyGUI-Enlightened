@@ -19,7 +19,7 @@ class PreviewThread(QThread):
 		# announce camera variable for run function to use
 		self.camera = camera
 		
-		# preview variable 
+		# preview loop break condition
 		self.preview = True
 		
 	def stop_preview(self):
@@ -73,6 +73,7 @@ class PreviewWindow(QLabel):
 	@pyqtSlot(QImage)
 	def setImage(self, image):
 		self.setPixmap(QPixmap.fromImage(image))
+		#~ print("frame updated")
 		
 class PreviewButton(QPushButton):
 	
@@ -114,22 +115,24 @@ class SnapshotButton(QPushButton):
 		try:
 			# 1st case - taking picture whilst preview thread running.
 			# temporarily stop preview thread and wait to ensure it's fully complete
-			self.parent.previewwindow.stop_thread()
-			time.sleep(0.2)
+			#~ self.parent.previewwindow.stop_thread()
+			#~ time.sleep(0.25)
 			
 			# take time-stamped picture			
-			current_time = time.strftime("%Y%m%d_time%H%Ms%S")
-			file_name = "Im_"+current_time+".jpg"
+			#~ current_time = time.strftime("%Y%m%d_time%H%Ms%S")
+			#~ file_name = "Im_"+current_time+".jpg"
+			file_name = "Im_2.jpg"
 			self.parent.camera.capture(file_name, format="jpeg", use_video_port=False)
 			
 			# re-start preview thread
-			self.parent.previewwindow.start_thread()
+			#~ self.parent.previewwindow.start_thread()
 			
 		except AttributeError:
 			# 2nd case - taking picture when preview thread not running.
 			# take time-stamped picture	
-			current_time = time.strftime("%Y%m%d_time%H%Ms%S")
-			file_name = "Im_"+current_time+".jpg"
+			#~ current_time = time.strftime("%Y%m%d_time%H%Ms%S")
+			#~ file_name = "Im_"+current_time+".jpg"
+			file_name = "Im_2.jpg"
 			self.parent.camera.capture(file_name, format="jpeg", use_video_port=False)
 			
 class MainWindow(QWidget):
