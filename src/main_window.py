@@ -2,7 +2,8 @@ import sys
 
 from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication
 
-from src.camera import CameraSection, Camera
+from src.camerasection import CameraSection
+from src.camera import Camera
 
 class MainWindow(QWidget):
 	

@@ -1,3 +1,3 @@
-# ScopeControl
+# DaisyGUI
 
-### A graphical user interface to the FergBoard2 open-hardware microscope controller.
+### A graphical user interface to the DaisyDriver open-hardware microscope controller.
