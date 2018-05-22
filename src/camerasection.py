@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 
-from src.settings import SettingsWindow
+from src.settings import SettingsWindow, CameraSettingsButton
 
 class PreviewWindow(QLabel):
 	
@@ -113,28 +113,13 @@ class SnapshotButton(QPushButton):
 		# set initial button function to start preview
 		self.clicked.connect(camera.capture)
 		
-class CameraSettingsButton(QPushButton):
-	
-	def __init__(self, parent, camera):
-		super(CameraSettingsButton, self).__init__(QIcon('resources/settings.svg'), 'Camera Settings', parent)
-		
-		# announce main window parent and camera
-		self.parent = parent
-		self.camera = camera
-		
-		# connect
-		self.clicked.connect(self.open_settings)
-		
-	def open_settings(self):
-		# create and open settings window dialog box,
-		# with handle on camera object
-		settings = SettingsWindow(self.parent, self.camera)
-		settings.show()
-		
 class CameraSection(QGroupBox):
 	
 	def __init__(self, parent, camera):
 		super(CameraSection, self).__init__(parent)
+		
+		# announce parent (main window)
+		self.main_window = parent
 		
 		# get customised PiCamera instance
 		self.camera = camera
@@ -150,10 +135,10 @@ class CameraSection(QGroupBox):
 		sublayout_preview = QVBoxLayout()
 		
 		# initialise widgets
-		self.previewwindow = PreviewWindow(self, self.camera)
-		self.previewbutton = PreviewButton(self)
-		self.snapshotbutton = SnapshotButton(self, self.camera)
-		self.settingsbutton = CameraSettingsButton(self, self.camera)
+		self.previewwindow = PreviewWindow(self.main_window, self.camera)
+		self.previewbutton = PreviewButton(self.main_window)
+		self.snapshotbutton = SnapshotButton(self.main_window, self.camera)
+		self.settingsbutton = CameraSettingsButton(self.main_window, self.camera)
 		#~ self.cameraselection = QComboBox(self)
 
 		# add widgets to vertical box layout
