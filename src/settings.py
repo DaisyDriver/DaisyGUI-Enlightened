@@ -1,8 +1,7 @@
 from time import sleep
-
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QPixmap, QImage, QIcon
+from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QIcon
 
 class SetResolutionDropDown(QComboBox):
 	
@@ -55,7 +54,9 @@ class SetResolutionDropDown(QComboBox):
 
 		# restart preview thread if was on before
 		if restart:
-			self.sig_start_thread.emit()	
+			self.sig_start_thread.emit()
+			
+		print('Succesfully changed resolution to:', self.camera.resolution)	
 
 class SetResolution(QWidget):
 	
@@ -116,6 +117,9 @@ class SettingsWindow(QDialog):
 		# set settings_layout as widget layout
 		self.setLayout(settings_layout)
 		
+		# set window geometry
+		self.setFixedSize(settings_layout.sizeHint())
+		
 	def sigslot_connector(self):
 		# connect capture preview buttons, for change in resolution
 		self.setting_resolution.dropdown.sig_start_thread.connect(self.main_window.camerasection.previewwindow.start_preview_thread)
@@ -124,7 +128,7 @@ class SettingsWindow(QDialog):
 class CameraSettingsButton(QPushButton):
 	
 	def __init__(self, parent, camera):
-		super(CameraSettingsButton, self).__init__(QIcon('resources/settings.svg'), 'Camera Settings', parent)
+		super(CameraSettingsButton, self).__init__(QIcon('resources/settings.svg'), '  Camera Settings', parent)
 		
 		# announce main window parent and camera
 		self.parent = parent

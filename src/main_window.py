@@ -1,9 +1,8 @@
 import sys
-
 from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication
-
 from src.camerasection import CameraSection
 from src.camera import Camera
+from src.manualmovement import ManualMovementSection
 
 class MainWindow(QWidget):
 	
@@ -23,11 +22,13 @@ class MainWindow(QWidget):
 		# main layout
 		mainlayout = QGridLayout()
 		
-		# get camerasetup widget
+		# get widgets
 		self.camerasection = CameraSection(self, self.camera)
+		self.manualmovement = ManualMovementSection(self, self.camera)
 		
 		# add widgets to main layout
-		mainlayout.addWidget(self.camerasection, 0,0,1,1)
+		mainlayout.addWidget(self.camerasection, 0,0,2,1)
+		mainlayout.addWidget(self.manualmovement, 1,1,1,1)
 		
 		# set mainlayout as widget layout
 		self.setLayout(mainlayout)

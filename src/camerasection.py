@@ -1,11 +1,7 @@
-import sys
-import time
-import threading
-
+from threading import Thread
 from picamera.array import PiRGBArray
-
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 
 from src.settings import SettingsWindow, CameraSettingsButton
@@ -34,7 +30,7 @@ class PreviewWindow(QLabel):
 		self.camera.preview_state = True
 		
 		# start preview pane thread
-		self.frames_thread = threading.Thread(target = self.frame_getter)
+		self.frames_thread = Thread(target = self.frame_getter)
 		self.frames_thread.start()
 		
 	@pyqtSlot()		
@@ -78,12 +74,11 @@ class PreviewButton(QPushButton):
 	sig_stop_thread = pyqtSignal()
 	
 	def __init__(self, parent):
-		super(PreviewButton, self).__init__('Start Preview Feed', parent)
+		super(PreviewButton, self).__init__(QIcon('resources/play.svg'), '  Start Preview Feed', parent)
 		
 		# announce parent to class and set initial button function to start preview
 		self.parent = parent
 		self.clicked.connect(self.start_preview)
-		self.setIcon(QIcon('resources/play.svg'))
 		
 	def start_preview(self):
 		# start preview thread
@@ -91,7 +86,7 @@ class PreviewButton(QPushButton):
 		
 		# change text, icon and button function
 		self.clicked.disconnect()
-		self.setText('Stop Preview Feed')
+		self.setText('  Stop Preview Feed')
 		self.clicked.connect(self.stop_preview)
 		self.setIcon(QIcon('resources/square.svg'))
 		
@@ -101,14 +96,14 @@ class PreviewButton(QPushButton):
 		
 		# change text, icon and button function
 		self.clicked.disconnect()
-		self.setText('Start Preview Feed')
+		self.setText('  Start Preview Feed')
 		self.clicked.connect(self.start_preview)
 		self.setIcon(QIcon('resources/play.svg'))
 		
 class SnapshotButton(QPushButton):
 	
 	def __init__(self, parent, camera):
-		super(SnapshotButton, self).__init__(QIcon('resources/camera.svg'), 'Take Snapshot', parent)
+		super(SnapshotButton, self).__init__(QIcon('resources/camera.svg'), '  Take Snapshot', parent)
 		
 		# set initial button function to start preview
 		self.clicked.connect(camera.capture)
