@@ -1,7 +1,6 @@
 import time
 
 from picamera import PiCamera
-from picamera.array import PiRGBArray
 
 class Camera(PiCamera):
 	
@@ -13,6 +12,9 @@ class Camera(PiCamera):
 		
 		# set default save directory
 		self.savedir = '/home/pi/ScopeControl/'
+		
+		# preview state sentinel
+		self.preview_state = False
 		
 	def capture(self):
 		# get time/date signature

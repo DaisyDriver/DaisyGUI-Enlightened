@@ -2,6 +2,8 @@ import sys
 import time
 import threading
 
+from picamera.array import PiRGBArray
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QPixmap, QImage, QIcon
@@ -18,9 +20,6 @@ class PreviewWindow(QLabel):
 		# announce camera object
 		self.camera = camera
 		
-		# preview state sentinel
-		self.preview_state = False
-		
 		# set no-feed image
 		self.goat = QImage('resources/goat-small.jpg')
 		self.setPixmap(QPixmap.fromImage(self.goat))
@@ -31,15 +30,17 @@ class PreviewWindow(QLabel):
 		
 	@pyqtSlot()	
 	def start_preview_thread(self):
+		# set preview sentinal to true
+		self.camera.preview_state = True
+		
 		# start preview pane thread
 		self.frames_thread = threading.Thread(target = self.frame_getter)
-		self.preview_state = True
 		self.frames_thread.start()
 		
 	@pyqtSlot()		
 	def stop_preview_thread(self):
 		# set preview state variable to false
-		self.preview_state = False
+		self.camera.preview_state = False
 		
 		# if thread started, wait for it to complete
 		self.frames_thread.join()
@@ -52,7 +53,7 @@ class PreviewWindow(QLabel):
 		capturestream_array = PiRGBArray(self.camera, size = (640, 480))
 
 		for frame in self.camera.capture_continuous(capturestream_array, format="rgb", resize=(640, 480), use_video_port=True):
-			if self.preview_state:
+			if self.camera.preview_state:
 				
 				# grab the image array
 				img = frame.array
@@ -67,7 +68,7 @@ class PreviewWindow(QLabel):
 				# clear the stream in preparation for the next frame
 				capturestream_array.truncate(0)
 				
-			elif not self.preview_state:
+			elif not self.camera.preview_state:
 				break
 		
 class PreviewButton(QPushButton):

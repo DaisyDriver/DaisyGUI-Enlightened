@@ -29,6 +29,9 @@ class MainWindow(QWidget):
 		# add widgets to main layout
 		mainlayout.addWidget(self.camerasection, 0,0,1,1)
 		
+		# set mainlayout as widget layout
+		self.setLayout(mainlayout)
+		
 		# set window geometry
 		self.setFixedSize(mainlayout.sizeHint())
 		self.move(50, 50)
