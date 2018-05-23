@@ -74,14 +74,9 @@ class FileDirInput(QWidget):
 												'Directory: "' + textbox_mod + '" does not exist.\nDo you want to create it?', 
 												QMessageBox.Cancel | QMessageBox.Yes, QMessageBox.Yes)
 					
-			#~ print(dir_question)
-			#~ print(type(dir_question))
 			if dir_question == QMessageBox.Yes:
-				print("yes clicked")
-				#~ Path(textbox_mod).mkdir(parents=True, exist_ok=True)
-				#~ self.camera.savedir = textbox_mod
-			if dir_question == QMessageBox.Cancel:
-				print("cancel clicked")
+				Path(textbox_mod).mkdir(parents=True, exist_ok=True)
+				self.camera.savedir = textbox_mod
 
 		# update text in box
 		self.dirinput.setText(textbox_mod) 
