@@ -25,4 +25,4 @@ class Camera(PiCamera):
 		
 		# use parent method to capture
 		super(Camera, self).capture(file_name, format="jpeg", use_video_port=False)
-
+		

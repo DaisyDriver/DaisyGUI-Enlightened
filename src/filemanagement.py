@@ -1,6 +1,8 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from PyQt5.QtCore import pyqtSlot
+from os.path import isdir
+from pathlib import Path
 
 class FileDirInput(QWidget):
 	
@@ -22,9 +24,10 @@ class FileDirInput(QWidget):
 		
 		self.dirinput = QLineEdit(self.camera.savedir, self)
 		self.dirinput.setFixedWidth(165)
-		self.dirinput.textEdited.connect(self.ontextchange)
+		self.dirinput.textChanged.connect(self.ontextchange)
 		
 		self.dirupdate = QPushButton(QIcon('resources/done-all.svg'), 'Apply', self)
+		self.dirupdate.clicked.connect(self.applytextchange)
 		self.dirupdate.setEnabled(False)
 
 		# add widgets to vertical box layout
@@ -34,9 +37,6 @@ class FileDirInput(QWidget):
 
 		# set sublayout as widget layout
 		self.setLayout(sublayout_filedir)
-		
-		#~ # set size
-		#~ self.resize(280,40)
 		
 	@pyqtSlot(str)	
 	def ontextchange(self, textbox_in):
@@ -49,6 +49,46 @@ class FileDirInput(QWidget):
 			
 		elif not same:
 			self.dirupdate.setEnabled(True)
+			
+	@pyqtSlot()
+	def applytextchange(self):
+		# get text from box
+		textbox_mod = self.dirinput.text()
+		
+		# ensure directory string ends and starts with '/' if not append
+		if len(textbox_mod)>0 and textbox_mod[-1]!='/':
+			textbox_mod = textbox_mod + '/'
+			
+		if len(textbox_mod)>0 and textbox_mod[0]!='/':
+			textbox_mod = '/' + textbox_mod
+			
+		if len(textbox_mod)==0:
+			textbox_mod = '/'
+			
+		# check directory exists, if not raise question box
+		if isdir(textbox_mod):
+			self.camera.savedir = textbox_mod
+			
+		elif not isdir(textbox_mod):
+			dir_question = QMessageBox.question(self, 'Non-existent Directory', 
+												'Directory: "' + textbox_mod + '" does not exist.\nDo you want to create it?', 
+												QMessageBox.Cancel | QMessageBox.Yes, QMessageBox.Yes)
+					
+			#~ print(dir_question)
+			#~ print(type(dir_question))
+			if dir_question == QMessageBox.Yes:
+				print("yes clicked")
+				#~ Path(textbox_mod).mkdir(parents=True, exist_ok=True)
+				#~ self.camera.savedir = textbox_mod
+			if dir_question == QMessageBox.Cancel:
+				print("cancel clicked")
+
+		# update text in box
+		self.dirinput.setText(textbox_mod) 
+		
+		# make sure apply button updates
+		self.ontextchange(textbox_mod)
+		
 
 class FileManagementSection(QGroupBox):
 	

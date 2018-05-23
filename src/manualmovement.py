@@ -46,7 +46,7 @@ class ManMoveXY(QGroupBox):
 		
 	def initUI(self):
 		# general settings
-		self.setTitle('X and Y plane')
+		self.setTitle('X/Y plane')
 		
 		# XY controls, grid layout
 		sublayout_XY = QGridLayout()
