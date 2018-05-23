@@ -31,7 +31,7 @@ class ManMoveZ(QGroupBox):
 		self.setLayout(sublayout_Z)
 		
 		# set geometry
-		self.setFixedSize(85, 150)
+		self.setFixedSize(85, 175)
 
 class ManMoveXY(QGroupBox):
 	
@@ -52,22 +52,42 @@ class ManMoveXY(QGroupBox):
 		sublayout_XY = QGridLayout()
 		
 		# initialise widgets
-		self.left = QPushButton(QIcon('resources/left.svg'), '', self.parent)
-		self.right = QPushButton(QIcon('resources/right.svg'), '', self.parent)
-		self.up = QPushButton(QIcon('resources/up.svg'), '', self.parent)
-		self.down = QPushButton(QIcon('resources/down.svg'), '', self.parent)
+		self.left = QPushButton(QIcon('resources/bubble_left.svg'), '', self.parent)
+		self.right = QPushButton(QIcon('resources/bubble_right.svg'), '', self.parent)
+		self.up = QPushButton(QIcon('resources/bubble_up.svg'), '', self.parent)
+		self.upright = QPushButton(QIcon('resources/bubble_upright.svg'), '', self.parent)
+		self.upleft = QPushButton(QIcon('resources/bubble_upleft.svg'), '', self.parent)
+		self.down = QPushButton(QIcon('resources/bubble_down.svg'), '', self.parent)
+		self.downright = QPushButton(QIcon('resources/bubble_downright.svg'), '', self.parent)
+		self.downleft = QPushButton(QIcon('resources/bubble_downleft.svg'), '', self.parent)
+		
+		# set size
+		self.left.setFixedSize(40, 40)
+		self.right.setFixedSize(40, 40)
+		self.up.setFixedSize(40, 40)
+		self.upright.setFixedSize(40, 40)
+		self.upleft.setFixedSize(40, 40)
+		self.down.setFixedSize(40, 40)
+		self.downright.setFixedSize(40, 40)
+		self.downleft.setFixedSize(40, 40)
+		
+		# change buttons to square!!
 		
 		# add widgets to vertical box layout
 		sublayout_XY.addWidget(self.left, 1, 0, 1, 1)
 		sublayout_XY.addWidget(self.right, 1, 2, 1, 1)
 		sublayout_XY.addWidget(self.up, 0, 1, 1, 1)
+		sublayout_XY.addWidget(self.upright, 0, 2, 1, 1)
+		sublayout_XY.addWidget(self.upleft, 0, 0, 1, 1)
 		sublayout_XY.addWidget(self.down, 2, 1, 1, 1)
+		sublayout_XY.addWidget(self.downright, 2, 2, 1, 1)
+		sublayout_XY.addWidget(self.downleft, 2, 0, 1, 1)
 		
 		# set sublayout as widget layout
 		self.setLayout(sublayout_XY)
 		
 		# set geometry
-		self.setFixedSize(150, 150)
+		self.setFixedSize(150, 175) # MAKE this SQUARE!!
 
 class ManualMovementSection(QGroupBox):
 	
