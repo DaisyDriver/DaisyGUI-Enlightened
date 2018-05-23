@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication
 from src.camerasection import CameraSection
 from src.camera import Camera
 from src.manualmovement import ManualMovementSection
+from src.filemanagement import FileManagementSection
 
 class MainWindow(QWidget):
 	
@@ -24,22 +25,25 @@ class MainWindow(QWidget):
 		
 		# get widgets
 		self.camerasection = CameraSection(self, self.camera)
+		self.filemanagement = FileManagementSection(self, self.camera)
 		self.manualmovement = ManualMovementSection(self, self.camera)
 		
 		# add widgets to main layout
-		mainlayout.addWidget(self.camerasection, 0,0,2,1)
-		mainlayout.addWidget(self.manualmovement, 1,1,1,1)
+		mainlayout.addWidget(self.camerasection, 0, 0, 3, 1)
+		mainlayout.addWidget(self.filemanagement, 0, 1, 1, 1)
+		mainlayout.addWidget(self.manualmovement, 1, 1, 1, 1)
+
 		
 		# set mainlayout as widget layout
 		self.setLayout(mainlayout)
 		
 		# set window geometry
 		self.setFixedSize(mainlayout.sizeHint())
-		self.move(50, 50)
+		self.move(75, 75)
 		
 	def closeEvent(self, event):
 		# ensure preview thread ends
-		self.camerasection.previewwindow.preview_state = False
+		self.camera.preview_state = False
 
 def run():
 	

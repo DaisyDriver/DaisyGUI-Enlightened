@@ -1,6 +1,5 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import QThread, QObject, pyqtSignal, pyqtSlot
-from PyQt5.QtGui import QPixmap, QImage, QIcon
+from PyQt5.QtGui import QIcon
 
 class ManMoveZ(QGroupBox):
 	

@@ -30,7 +30,10 @@ class SetResolutionDropDown(QComboBox):
 		
 		# set to currently chosen resolution
 		current_resolution = str(self.camera.resolution)
-		self.setCurrentText(current_resolution)
+		if (current_resolution[0] == '3'):
+			self.setCurrentText('3280x2464 (extra GPU ram must be allocated)')
+		else:
+			self.setCurrentText(current_resolution)
 		
 		# connect to resolution changer function
 		self.currentTextChanged.connect(self.res_changer)
