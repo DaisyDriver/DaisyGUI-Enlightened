@@ -1,4 +1,4 @@
-from time import strftime
+from datetime import datetime
 from picamera import PiCamera
 from pathlib import Path
 
@@ -17,12 +17,16 @@ class Camera(PiCamera):
 		# preview state sentinel
 		self.preview_state = False
 		
+		# set default file format
+		self.fileformat = 'jpeg'
+		
+		# set default name format
+		self.nameformat = 'Image{timestamp:_day%Y%m%d_time%H-%M-%S-%f}.jpg'
+		
 	def capture(self):
 		# get time/date signature
-		current_time = strftime("%Y%m%d_time%H%Ms%S")
-		file_name = self.savedir + "Im_"+current_time+".jpg"
-		#~ file_name = self.savedir + "Im.jpg"
+		file_name = self.savedir + self.nameformat.format(timestamp=datetime.now())
 		
 		# use parent method to capture
-		super(Camera, self).capture(file_name, format="jpeg", use_video_port=False)
+		super(Camera, self).capture(file_name, format=self.fileformat, use_video_port=False)
 		
