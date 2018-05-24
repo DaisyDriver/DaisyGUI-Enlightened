@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QSize
 
 class ManMoveSpeed(QGroupBox):
 	
@@ -27,6 +27,7 @@ class ManMoveSpeed(QGroupBox):
 		self.speedslider.setTickPosition(QSlider.TicksLeft)
 		self.speedslider.setTickInterval(1)
 		self.speedslider.setFixedHeight(115)
+		self.speedslider.setValue(2)
 
 		self.hispeed = QLabel('High')
 		self.medspeed = QLabel('Med')
@@ -122,7 +123,10 @@ class ManMoveZ(QGroupBox):
 		
 		# set size
 		self.up.setFixedSize(40, 58)
+		self.up.setIconSize(QSize(23, 23))
+		
 		self.down.setFixedSize(40, 58)
+		self.down.setIconSize(QSize(23, 23))
 		
 		# add widgets to vertical box layout
 		sublayout_Z.addWidget(self.up, 0, 0, 2, 1)

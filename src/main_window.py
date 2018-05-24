@@ -18,7 +18,7 @@ class MainWindow(QWidget):
 	
 	def initUI(self):
 		# general settings
-		self.setWindowTitle('DaisyGUI v0.1')
+		self.setWindowTitle('DaisyGUI v0.5')
 		
 		# main layout
 		mainlayout = QGridLayout()

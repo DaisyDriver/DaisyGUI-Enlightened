@@ -84,6 +84,32 @@ class FileDirInput(QWidget):
 		# make sure apply button updates
 		self.ontextchange(textbox_mod)
 
+class SetFileFormat(QWidget):
+	
+	def __init__(self, parent, camera):
+		super(SetFileFormat, self).__init__(parent)
+		
+		# announce camera handle
+		self.camera = camera
+		
+		# initialise user interface
+		self.initUI()
+		
+	def initUI(self):
+		# set layout
+		setres_layout = QHBoxLayout()
+		
+		# get widgets
+		self.ftext = QLabel('File Format:')
+		#~ self.dropdown = SetResolutionDropDown(self.camera)
+		
+		# add widgets to layout
+		setres_layout.addWidget(self.ftext)
+		#~ setres_layout.addWidget(self.dropdown)
+		
+		# set setres_layout as widget layout
+		self.setLayout(setres_layout)
+
 class NameFormatInput(QWidget):
 	
 	def __init__(self, parent, camera):
@@ -158,15 +184,19 @@ class FileManagementSection(QGroupBox):
 		
 		# initialise widgets
 		self.dirinput = FileDirInput(self, self.camera)
+		self.fileformat = SetFileFormat(self, self.camera)
 		self.nameformat = NameFormatInput(self, self.camera)
-		#~ self.fileformat = 
+
 
 		# add widgets to vertical box layout
 		sublayout_fileman.addWidget(self.dirinput)
+		sublayout_fileman.addWidget(self.fileformat)
 		sublayout_fileman.addWidget(self.nameformat)
-		#~ sublayout_fileman.addWidget(self.fileformat)
 
 		# set sublayout as widget layout
 		self.setLayout(sublayout_fileman)
+		
+		# set geometry
+		self.setFixedSize(sublayout_fileman.sizeHint())
 
 	

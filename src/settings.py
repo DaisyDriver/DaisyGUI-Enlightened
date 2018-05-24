@@ -77,7 +77,7 @@ class SetResolution(QWidget):
 		setres_layout = QHBoxLayout()
 		
 		# get widgets
-		self.text = QLabel('Resolution')
+		self.text = QLabel('Resolution:')
 		self.dropdown = SetResolutionDropDown(self.camera)
 		
 		# add widgets to layout
