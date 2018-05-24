@@ -1,43 +1,23 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from os.path import isdir
 from pathlib import Path
 
-class FileDirInput(QWidget):
+class FileDirInput(QLineEdit):
+	
+	# signal to send to apply button
+	apply_state = pyqtSignal(bool)
 	
 	def __init__(self, parent, camera):
-		super(FileDirInput, self).__init__(parent)
+		super(FileDirInput, self).__init__(camera.savedir, parent)
 		
 		# announce camera
 		self.camera = camera
 
-		# init UI
-		self.initUI()
-		
-	def initUI(self):
-		# section layout
-		sublayout_filedir = QGridLayout()
-		
-		# initialise widgets
-		self.dirlabel = QLabel('Save Directory:')
-		
-		self.dirinput = QLineEdit(self.camera.savedir, self)
-		self.dirinput.setFixedWidth(165)
-		self.dirinput.textChanged.connect(self.ontextchange)
-		
-		self.dirupdate = QPushButton(QIcon('resources/done-all.svg'), 'Apply', self)
-		self.dirupdate.clicked.connect(self.applytextchange)
-		self.dirupdate.setEnabled(False)
+		# connect to function on change of text
+		self.textChanged.connect(self.ontextchange)
 
-		# add widgets to vertical box layout
-		sublayout_filedir.addWidget(self.dirlabel, 0, 0, 1, 1)
-		sublayout_filedir.addWidget(self.dirinput, 0, 1, 1, 1)
-		sublayout_filedir.addWidget(self.dirupdate, 0, 2, 1, 1)
-
-		# set sublayout as widget layout
-		self.setLayout(sublayout_filedir)
-		
 	@pyqtSlot(str)	
 	def ontextchange(self, textbox_in):
 		# check whether text in box different to current save directory
@@ -45,15 +25,15 @@ class FileDirInput(QWidget):
 		same = (textbox_in == self.camera.savedir)
 		
 		if same:
-			self.dirupdate.setEnabled(False)
+			self.apply_state.emit(False)
 			
 		elif not same:
-			self.dirupdate.setEnabled(True)
+			self.apply_state.emit(True)
 			
 	@pyqtSlot()
-	def applytextchange(self):
+	def applydirchange(self):
 		# get text from box
-		textbox_mod = self.dirinput.text()
+		textbox_mod = self.text()
 		
 		# ensure directory string ends and starts with '/' if not append
 		if len(textbox_mod)>0 and textbox_mod[-1]!='/':
@@ -79,12 +59,15 @@ class FileDirInput(QWidget):
 				self.camera.savedir = textbox_mod
 
 		# update text in box
-		self.dirinput.setText(textbox_mod) 
+		self.setText(textbox_mod) 
 		
 		# make sure apply button updates
 		self.ontextchange(textbox_mod)
 
-class SetFileFormat(QWidget):
+class SetFileFormat(QComboBox):
+	
+	# signal to send to apply button
+	apply_state = pyqtSignal(bool)
 	
 	def __init__(self, parent, camera):
 		super(SetFileFormat, self).__init__(parent)
@@ -96,73 +79,53 @@ class SetFileFormat(QWidget):
 		self.initUI()
 		
 	def initUI(self):
-		# set layout
-		setres_layout = QGridLayout()
-		
-		# get widgets
-		self.ftext = QLabel('File Format:')
-		self.fdropdown = QComboBox(self)
-		self.initComboBox()
-		
-		# add widgets to layout
-		setres_layout.addWidget(self.ftext, 0, 0, 1 ,1)
-		setres_layout.addWidget(self.fdropdown, 0, 1, 1, 4)
-		
-		self.fdropdown.setFixedWidth(100)
-		
-		# set setres_layout as widget layout
-		self.setLayout(setres_layout)
-		
-	def initComboBox(self):
 		# add all formats
-		self.fdropdown.addItem('jpeg')
-		self.fdropdown.addItem('png')
-		self.fdropdown.addItem('gif')
-		self.fdropdown.addItem('bmp')
-		self.fdropdown.addItem('yuv')
-		self.fdropdown.addItem('rgb')
-		self.fdropdown.addItem('rgba')
-		self.fdropdown.addItem('bgr')
-		self.fdropdown.addItem('bgra')
+		self.addItem('jpeg')
+		self.addItem('png')
+		self.addItem('gif')
+		self.addItem('bmp')
+		self.addItem('yuv')
+		self.addItem('rgb')
+		self.addItem('rgba')
+		self.addItem('bgr')
+		self.addItem('bgra')
 		
-		self.fdropdown.setCurrentText(self.camera.FileFormat)
+		# set to initial file format
+		self.setCurrentText(self.camera.FileFormat)
 		
-		# connect to format changer function
-		self.fdropdown.currentTextChanged.connect(self.camera.filenameSetFormat)
-
-class NameFormatPrefix(QWidget):
+		# connect changed to tester function for apply
+		self.currentTextChanged.connect(self.ontextchange)
+		
+	@pyqtSlot(str)	
+	def ontextchange(self, textbox_in):
+		# check whether text in box different to current save directory
+		# and make apply button active/inactive as appropriate
+		same = (textbox_in == self.camera.FileFormat)
+		
+		if same:
+			self.apply_state.emit(False)
+			
+		elif not same:
+			self.apply_state.emit(True)
+			
+	@pyqtSlot()
+	def applyformatchange(self):
+		# apply file format change
+		self.camera.filenameSetFormat(self.currentText())
+		
+class NameFormatPrefix(QLineEdit):
+	
+	# signal to send to apply button
+	apply_state = pyqtSignal(bool)
 	
 	def __init__(self, parent, camera):
-		super(NameFormatPrefix, self).__init__(parent)
+		super(NameFormatPrefix, self).__init__(camera.NamePrefix, parent)
 		
 		# announce camera
 		self.camera = camera
 
-		# init UI
-		self.initUI()
-		
-	def initUI(self):
-		# section layout
-		sublayout_nameprefix = QHBoxLayout()
-		
-		# initialise widgets
-		self.namelabel = QLabel('Filename Prefix:')
-		
-		self.nameinput = QLineEdit(self.camera.NamePrefix, self)
-		self.nameinput.setFixedWidth(90)
-		self.nameinput.textChanged.connect(self.ontextchange)
-		
-		self.nameupdate = QPushButton(QIcon('resources/done-all.svg'), 'Apply', self)
-		self.nameupdate.clicked.connect(self.applytextchange)
-		self.nameupdate.setEnabled(False)
-		
-		# add widgets to vertical box layout
-		sublayout_nameprefix.addWidget(self.namelabel)
-		sublayout_nameprefix.addWidget(self.nameinput)
-		sublayout_nameprefix.addWidget(self.nameupdate)
-
-		# set sublayout as widget layout
-		self.setLayout(sublayout_nameprefix)
+		# connect text changed to apply button checker
+		self.textChanged.connect(self.ontextchange)
 		
 	@pyqtSlot(str)	
 	def ontextchange(self, textbox_in):
@@ -171,18 +134,18 @@ class NameFormatPrefix(QWidget):
 		same = (textbox_in == self.camera.NamePrefix)
 		
 		if same:
-			self.nameupdate.setEnabled(False)
+			self.apply_state.emit(False)
 			
 		elif not same:
-			self.nameupdate.setEnabled(True)
+			self.apply_state.emit(True)
 			
 	@pyqtSlot()
-	def applytextchange(self):
+	def applyprefixchange(self):
 		# set file name format 
-		self.camera.filenameSetPrefix(self.nameinput.text())
+		self.camera.filenameSetPrefix(self.text())
 		
 		# update apply button
-		self.ontextchange(self.nameinput.text())
+		self.ontextchange(self.text())
 		
 class NameFormatStamper(QWidget):
 	
@@ -200,18 +163,18 @@ class NameFormatStamper(QWidget):
 		sublayout_namestamp = QHBoxLayout()
 		
 		# initialise widgets
-		self.stamplabel = QLabel(' Include: ')
-		
-		self.checkboxtime = QCheckBox('Timestamp', self)
-		self.checkboxdate = QCheckBox('Datestamp', self)
+		self.checkboxdate = QCheckBox('Date', self)
+		self.checkboxtime = QCheckBox('Time', self)
 
 		# add widgets to vertical box layout
-		sublayout_namestamp.addWidget(self.stamplabel)
-		sublayout_namestamp.addWidget(self.checkboxtime)
 		sublayout_namestamp.addWidget(self.checkboxdate)
+		sublayout_namestamp.addWidget(self.checkboxtime)
 
 		# set sublayout as widget layout
 		self.setLayout(sublayout_namestamp)
+		
+		# reduce automatic height
+		self.setFixedHeight(35)
 		
 	#~ @pyqtSlot(str)	
 	#~ def ontextchange(self, textbox_in):
@@ -237,15 +200,18 @@ class NameFormatStamper(QWidget):
 class ApplyButton(QPushButton):
 	
 	def __init__(self, parent, camera):
-		super(ApplyButton, self).__init__(QIcon('resources/done-all.svg'), 'Apply', self)
+		super(ApplyButton, self).__init__(QIcon('resources/done-all.svg'), 'Apply', parent)
 		
 		# announce camera handle
 		self.camera = camera
 		
+		# set inactive initially as boxes all contain defaults
+		self.setEnabled(False)
+		
 class AdvancedSettingsButton(QPushButton):
 	
 	def __init__(self, parent, camera):
-		super(ApplyButton, self).__init__(QIcon('resources/cog.svg'), 'Advanced Settings', self)
+		super(AdvancedSettingsButton, self).__init__(QIcon('resources/cog.svg'), 'Settings', parent)
 		
 		# announce camera handle
 		self.camera = camera
@@ -269,24 +235,46 @@ class FileManagementSection(QGroupBox):
 		sublayout_fileman = QFormLayout()
 		
 		# initialise widgets
-		#~ self.dirinput = FileDirInput(self, self.camera)
-		#~ self.fileformat = SetFileFormat(self, self.camera)
-		#~ self.nameformat = NameFormatPrefix(self, self.camera)
-		#~ self.namestamper = NameFormatStamper(self, self.camera)
+		self.dirinput = FileDirInput(self, self.camera)
+		self.fileformat = SetFileFormat(self, self.camera)
+		self.nameformat = NameFormatPrefix(self, self.camera)
+		self.namestamper = NameFormatStamper(self, self.camera)
 		self.applybutton = ApplyButton(self, self.camera)
 		self.adsetbutton = AdvancedSettingsButton(self, self.camera)
 
 		# add widgets to vertical box layout
-		#~ layout.addRow(QLabel("Name:"), QLineEdit())
-		#~ sublayout_fileman.addRow(self.dirinput)
-		#~ sublayout_fileman.addRow(self.fileformat)
-		#~ sublayout_fileman.addRow(self.nameformat)
-		sublayout_fileman.addRow(self.applybutton, self.adsetbutton)
+		sublayout_fileman.addRow(QLabel('Save Directory:'), self.dirinput)
+		sublayout_fileman.addRow(QLabel('File Format:'), self.fileformat)
+		sublayout_fileman.addRow(QLabel('File Name Prefix:'), self.nameformat)
+		sublayout_fileman.addRow(QLabel('Include Stamps:'), self.namestamper)
+		sublayout_fileman.addRow(self.adsetbutton, self.applybutton)
 
 		# set sublayout as widget layout
 		self.setLayout(sublayout_fileman)
 		
 		# set geometry
 		#~ self.setFixedSize(sublayout_fileman.sizeHint())
+		
+		# make connections between slots and signals
+		self.makeconnections()
+		
+	def makeconnections(self):
+		
+		# from directory text box to apply button
+		self.dirinput.apply_state.connect(self.applybutton.setEnabled)
+		# from apply button to directory text box
+		self.applybutton.clicked.connect(self.dirinput.applydirchange)
+
+		# from file format combo box to apply button
+		self.fileformat.apply_state.connect(self.applybutton.setEnabled)
+		# from apply button to format combox box
+		self.applybutton.clicked.connect(self.fileformat.applyformatchange)
+		
+		# from name prefix text box to apply button
+		self.nameformat.apply_state.connect(self.applybutton.setEnabled)
+		# from apply button to directory text box
+		self.applybutton.clicked.connect(self.nameformat.applyprefixchange)
+		
+
 
 	

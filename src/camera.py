@@ -1,6 +1,7 @@
 from datetime import datetime
 from picamera import PiCamera
 from pathlib import Path
+from PyQt5.QtCore import pyqtSignal, pyqtSlot
 
 class Camera(PiCamera):
 	

@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtGui import QPixmap, QImage, QIcon
 
-from src.settings import SettingsWindow, CameraSettingsButton
+from src.camerasettings import SettingsWindow, CameraSettingsButton
 
 class PreviewWindow(QLabel):
 	
