@@ -97,18 +97,38 @@ class SetFileFormat(QWidget):
 		
 	def initUI(self):
 		# set layout
-		setres_layout = QHBoxLayout()
+		setres_layout = QGridLayout()
 		
 		# get widgets
 		self.ftext = QLabel('File Format:')
-		#~ self.dropdown = SetResolutionDropDown(self.camera)
+		self.fdropdown = QComboBox(self)
+		self.initComboBox()
 		
 		# add widgets to layout
-		setres_layout.addWidget(self.ftext)
-		#~ setres_layout.addWidget(self.dropdown)
+		setres_layout.addWidget(self.ftext, 0, 0, 1 ,1)
+		setres_layout.addWidget(self.fdropdown, 0, 1, 1, 4)
+		
+		self.fdropdown.setFixedWidth(100)
 		
 		# set setres_layout as widget layout
 		self.setLayout(setres_layout)
+		
+	def initComboBox(self):
+		# add all formats
+		self.fdropdown.addItem('jpeg')
+		self.fdropdown.addItem('png')
+		self.fdropdown.addItem('gif')
+		self.fdropdown.addItem('bmp')
+		self.fdropdown.addItem('yuv')
+		self.fdropdown.addItem('rgb')
+		self.fdropdown.addItem('rgba')
+		self.fdropdown.addItem('bgr')
+		self.fdropdown.addItem('bgra')
+		
+		self.fdropdown.setCurrentText(self.camera.FileFormat)
+		
+		# connect to format changer function
+		self.fdropdown.currentTextChanged.connect(self.camera.filenameSetFormat)
 
 class NameFormatInput(QWidget):
 	
@@ -126,10 +146,10 @@ class NameFormatInput(QWidget):
 		sublayout_filedir = QHBoxLayout()
 		
 		# initialise widgets
-		self.namelabel = QLabel('Name Format:')
+		self.namelabel = QLabel('Name Prefix:')
 		
-		self.nameinput = QLineEdit(self.camera.nameformat, self)
-		self.nameinput.setFixedWidth(165)
+		self.nameinput = QLineEdit(self.camera.NamePrefix, self)
+		self.nameinput.setFixedWidth(90)
 		self.nameinput.textChanged.connect(self.ontextchange)
 		
 		self.nameupdate = QPushButton(QIcon('resources/done-all.svg'), 'Apply', self)
@@ -148,7 +168,7 @@ class NameFormatInput(QWidget):
 	def ontextchange(self, textbox_in):
 		# check whether text in box different to current save directory
 		# and make apply button active/inactive as appropriate
-		same = (textbox_in == self.camera.nameformat)
+		same = (textbox_in == self.camera.NamePrefix)
 		
 		if same:
 			self.nameupdate.setEnabled(False)
@@ -159,7 +179,7 @@ class NameFormatInput(QWidget):
 	@pyqtSlot()
 	def applytextchange(self):
 		# set file name format 
-		self.camera.nameformat = self.nameinput.text()
+		self.camera.filenameSetPrefix(self.nameinput.text())
 		
 		# update apply button
 		self.ontextchange(self.nameinput.text())
@@ -197,6 +217,6 @@ class FileManagementSection(QGroupBox):
 		self.setLayout(sublayout_fileman)
 		
 		# set geometry
-		self.setFixedSize(sublayout_fileman.sizeHint())
+		#~ self.setFixedSize(sublayout_fileman.sizeHint())
 
 	
