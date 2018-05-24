@@ -126,7 +126,7 @@ class SettingsWindow(QDialog):
 	def sigslot_connector(self):
 		# connect capture preview buttons, for change in resolution
 		self.setting_resolution.dropdown.sig_start_thread.connect(self.main_window.camerasection.previewwindow.start_preview_thread)
-		self.setting_resolution.dropdown.sig_stop_thread.connect(self.main_window.camerasection.previewwindow.stop_preview_thread)	
+		self.setting_resolution.dropdown.sig_stop_thread.connect(self.main_window.camerasection.previewwindow.stop_preview_thread)
 
 class CameraSettingsButton(QPushButton):
 	

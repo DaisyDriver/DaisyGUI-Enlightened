@@ -233,6 +233,23 @@ class NameFormatStamper(QWidget):
 		#~ # update apply button
 		#~ self.ontextchange(self.nameinput.text())
 		
+		
+class ApplyButton(QPushButton):
+	
+	def __init__(self, parent, camera):
+		super(ApplyButton, self).__init__(QIcon('resources/done-all.svg'), 'Apply', self)
+		
+		# announce camera handle
+		self.camera = camera
+		
+class AdvancedSettingsButton(QPushButton):
+	
+	def __init__(self, parent, camera):
+		super(ApplyButton, self).__init__(QIcon('resources/cog.svg'), 'Advanced Settings', self)
+		
+		# announce camera handle
+		self.camera = camera
+		
 class FileManagementSection(QGroupBox):
 	
 	def __init__(self, parent, camera):
@@ -249,19 +266,22 @@ class FileManagementSection(QGroupBox):
 		self.setTitle('File Management')
 		
 		# section layout
-		sublayout_fileman = QVBoxLayout()
+		sublayout_fileman = QFormLayout()
 		
 		# initialise widgets
-		self.dirinput = FileDirInput(self, self.camera)
-		self.fileformat = SetFileFormat(self, self.camera)
-		self.nameformat = NameFormatPrefix(self, self.camera)
-		self.namestamper = NameFormatStamper(self, self.camera)
+		#~ self.dirinput = FileDirInput(self, self.camera)
+		#~ self.fileformat = SetFileFormat(self, self.camera)
+		#~ self.nameformat = NameFormatPrefix(self, self.camera)
+		#~ self.namestamper = NameFormatStamper(self, self.camera)
+		self.applybutton = ApplyButton(self, self.camera)
+		self.adsetbutton = AdvancedSettingsButton(self, self.camera)
 
 		# add widgets to vertical box layout
-		sublayout_fileman.addWidget(self.dirinput)
-		sublayout_fileman.addWidget(self.fileformat)
-		sublayout_fileman.addWidget(self.nameformat)
-		sublayout_fileman.addWidget(self.namestamper)
+		#~ layout.addRow(QLabel("Name:"), QLineEdit())
+		#~ sublayout_fileman.addRow(self.dirinput)
+		#~ sublayout_fileman.addRow(self.fileformat)
+		#~ sublayout_fileman.addRow(self.nameformat)
+		sublayout_fileman.addRow(self.applybutton, self.adsetbutton)
 
 		# set sublayout as widget layout
 		self.setLayout(sublayout_fileman)
