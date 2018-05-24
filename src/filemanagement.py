@@ -17,7 +17,7 @@ class FileDirInput(QWidget):
 		
 	def initUI(self):
 		# section layout
-		sublayout_filedir = QHBoxLayout()
+		sublayout_filedir = QGridLayout()
 		
 		# initialise widgets
 		self.dirlabel = QLabel('Save Directory:')
@@ -31,9 +31,9 @@ class FileDirInput(QWidget):
 		self.dirupdate.setEnabled(False)
 
 		# add widgets to vertical box layout
-		sublayout_filedir.addWidget(self.dirlabel)
-		sublayout_filedir.addWidget(self.dirinput)
-		sublayout_filedir.addWidget(self.dirupdate)
+		sublayout_filedir.addWidget(self.dirlabel, 0, 0, 1, 1)
+		sublayout_filedir.addWidget(self.dirinput, 0, 1, 1, 1)
+		sublayout_filedir.addWidget(self.dirupdate, 0, 2, 1, 1)
 
 		# set sublayout as widget layout
 		self.setLayout(sublayout_filedir)
