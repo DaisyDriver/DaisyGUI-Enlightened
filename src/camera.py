@@ -24,6 +24,10 @@ class Camera(PiCamera):
 		# preview state sentinel
 		self.preview_state = False
 		
+		# jpg format settings
+		self.bayerInclude = True
+		self.JPGquality = 100
+		
 	def camerasetup_DInit(self):
 		# set default resolution
 		self.resolution = (1640, 1232)
@@ -35,8 +39,7 @@ class Camera(PiCamera):
 		# ensure saturation turned off
 		self.saturation = 0
 		
-		# ensure auto-white balance off
-		#~ self.awb_mode = 'off' # check with Fergus, results in completely black images, maybe need to set self.awb_gains
+		# auto-white balance, starts auto
 		self.awb_mode = 'auto'
 		
 	def filenamehelper(self, prefix, Date, Time, Fformat):
@@ -73,6 +76,6 @@ class Camera(PiCamera):
 		# format filename with current timestamp values
 		filename = self.savedir + self.filename_unformat.format(timestamp=datetime.now())
 		
-		# use parent method to capture
-		super(Camera, self).capture(filename, format=self.FileFormat, use_video_port=False)
+		# use parent method to capture, *bayer and quality only used for JPG formats*
+		super(Camera, self).capture(filename, format=self.FileFormat, use_video_port=False, bayer=self.bayerInclude, quality=self.JPGquality)
 		

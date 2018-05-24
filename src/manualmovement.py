@@ -27,7 +27,7 @@ class ManMoveSpeed(QGroupBox):
 		self.speedslider.setTickPosition(QSlider.TicksLeft)
 		self.speedslider.setTickInterval(1)
 		self.speedslider.setFixedHeight(115)
-		self.speedslider.setValue(2)
+		self.speedslider.setValue(3)
 
 		self.hispeed = QLabel('High')
 		self.medspeed = QLabel('Med')
