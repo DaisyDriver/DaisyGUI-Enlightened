@@ -1,10 +1,11 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
+from PyQt5.QtCore import Qt
 
-class ManMoveZ(QGroupBox):
+class ManMoveSpeed(QGroupBox):
 	
 	def __init__(self, parent):
-		super(ManMoveZ, self).__init__(parent)
+		super(ManMoveSpeed, self).__init__(parent)
 		
 		# announce parent
 		self.parent = parent
@@ -14,21 +15,31 @@ class ManMoveZ(QGroupBox):
 		
 	def initUI(self):
 		# general settings
-		self.setTitle('Z plane')
+		self.setTitle('Speed')
 		
 		# XY controls, grid layout
-		sublayout_Z = QGridLayout()
+		sublayout_speed = QGridLayout()
 		
 		# initialise widgets
-		self.up = QPushButton(QIcon('resources/arrowup.svg'), '', self.parent)
-		self.down = QPushButton(QIcon('resources/arrowdown.svg'), '', self.parent)
+		self.speedslider = QSlider(Qt.Vertical, self.parent)
+		self.speedslider.setMinimum(1)
+		self.speedslider.setMaximum(3)
+		self.speedslider.setTickPosition(QSlider.TicksLeft)
+		self.speedslider.setTickInterval(1)
+		self.speedslider.setFixedHeight(115)
+
+		self.hispeed = QLabel('High')
+		self.medspeed = QLabel('Med')
+		self.lospeed = QLabel('Low')
 		
 		# add widgets to vertical box layout
-		sublayout_Z.addWidget(self.up, 0, 0, 1, 1)
-		sublayout_Z.addWidget(self.down, 2, 0, 1, 1)
+		sublayout_speed.addWidget(self.speedslider, 0, 1, 7, 1)
+		sublayout_speed.addWidget(self.hispeed, 0, 0, 1, 1)
+		sublayout_speed.addWidget(self.medspeed, 3, 0, 1, 1)
+		sublayout_speed.addWidget(self.lospeed, 6, 0, 1, 1)
 		
 		# set sublayout as widget layout
-		self.setLayout(sublayout_Z)
+		self.setLayout(sublayout_speed)
 		
 		# set geometry
 		self.setFixedSize(85, 175)
@@ -71,8 +82,6 @@ class ManMoveXY(QGroupBox):
 		self.downright.setFixedSize(40, 40)
 		self.downleft.setFixedSize(40, 40)
 		
-		# change buttons to square!!
-		
 		# add widgets to vertical box layout
 		sublayout_XY.addWidget(self.left, 1, 0, 1, 1)
 		sublayout_XY.addWidget(self.right, 1, 2, 1, 1)
@@ -87,7 +96,43 @@ class ManMoveXY(QGroupBox):
 		self.setLayout(sublayout_XY)
 		
 		# set geometry
-		self.setFixedSize(150, 175) # MAKE this SQUARE!!
+		self.setFixedSize(150, 175)
+
+class ManMoveZ(QGroupBox):
+	
+	def __init__(self, parent):
+		super(ManMoveZ, self).__init__(parent)
+		
+		# announce parent
+		self.parent = parent
+		
+		# initialise user interface
+		self.initUI()
+		
+	def initUI(self):
+		# general settings
+		self.setTitle('Z plane')
+		
+		# XY controls, grid layout
+		sublayout_Z = QGridLayout()
+		
+		# initialise widgets
+		self.up = QPushButton(QIcon('resources/arrowup.svg'), '', self.parent)
+		self.down = QPushButton(QIcon('resources/arrowdown.svg'), '', self.parent)
+		
+		# set size
+		self.up.setFixedSize(40, 58)
+		self.down.setFixedSize(40, 58)
+		
+		# add widgets to vertical box layout
+		sublayout_Z.addWidget(self.up, 0, 0, 2, 1)
+		sublayout_Z.addWidget(self.down, 2, 0, 2, 1)
+		
+		# set sublayout as widget layout
+		self.setLayout(sublayout_Z)
+		
+		# set geometry
+		self.setFixedSize(85, 175)
 
 class ManualMovementSection(QGroupBox):
 	
@@ -111,10 +156,12 @@ class ManualMovementSection(QGroupBox):
 		sublayout_manmove = QHBoxLayout()
 		
 		# initialise widgets
+		self.manSpeed = ManMoveSpeed(self)
 		self.manXY= ManMoveXY(self)
 		self.manZ = ManMoveZ(self)
 
 		# add widgets to vertical box layout
+		sublayout_manmove.addWidget(self.manSpeed)
 		sublayout_manmove.addWidget(self.manXY)
 		sublayout_manmove.addWidget(self.manZ)
 
