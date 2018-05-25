@@ -79,7 +79,7 @@ class Camera(PiCamera):
 		self.filenamehelper(self.NamePrefix, self.DateStamp, self.TimeStamp, self.FileFormat)
 		
 	def capture(self):
-		# format filename with current timestamp values
+		# format filename with date/time stamp values if appropriate
 		filename = self.savedir + self.filename_unformat.format(timestamp=datetime.now())
 		
 		# use parent method to capture, *bayer and quality only used for JPG formats*
