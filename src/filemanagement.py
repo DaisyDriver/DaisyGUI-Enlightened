@@ -3,17 +3,18 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from os.path import isdir
 from pathlib import Path
+from src.filemanagementadvanced import AdvancedSettingsWindow
 
 class FileDirInput(QLineEdit):
 	
 	# signal to send to apply button
 	apply_state = pyqtSignal(bool, str)
 	
-	def __init__(self, parent, camera):
-		super(FileDirInput, self).__init__(camera.savedir, parent)
+	def __init__(self, parent, fset):
+		super(FileDirInput, self).__init__(fset.savedir, parent)
 		
-		# announce camera
-		self.camera = camera
+		# announce fset
+		self.fset = fset
 
 		# connect to function on change of text
 		self.textChanged.connect(self.ontextchange)
@@ -22,7 +23,7 @@ class FileDirInput(QLineEdit):
 	def ontextchange(self, textbox_in):
 		# check whether text in box different to current save directory
 		# and make apply button active/inactive as appropriate
-		same = (textbox_in == self.camera.savedir)
+		same = (textbox_in == self.fset.savedir)
 		
 		if same:
 			self.apply_state.emit(False, 'FileDirInput')
@@ -47,7 +48,7 @@ class FileDirInput(QLineEdit):
 			
 		# check directory exists, if not raise question box
 		if isdir(textbox_mod):
-			self.camera.savedir = textbox_mod
+			self.fset.savedir = textbox_mod
 			
 		elif not isdir(textbox_mod):
 			dir_question = QMessageBox.question(self, 'Non-existent Directory', 
@@ -56,7 +57,7 @@ class FileDirInput(QLineEdit):
 					
 			if dir_question == QMessageBox.Yes:
 				Path(textbox_mod).mkdir(parents=True, exist_ok=True)
-				self.camera.savedir = textbox_mod
+				self.fset.savedir = textbox_mod
 
 		# update text in box
 		self.setText(textbox_mod) 
@@ -69,11 +70,11 @@ class SetFileFormat(QComboBox):
 	# signal to send to apply button
 	apply_state = pyqtSignal(bool, str)
 	
-	def __init__(self, parent, camera):
+	def __init__(self, parent, fset):
 		super(SetFileFormat, self).__init__(parent)
 		
-		# announce camera handle
-		self.camera = camera
+		# announce fset handle
+		self.fset = fset
 		
 		# initialise user interface
 		self.initUI()
@@ -91,7 +92,7 @@ class SetFileFormat(QComboBox):
 		self.addItem('bgra')
 		
 		# set to initial file format
-		self.setCurrentText(self.camera.FileFormat)
+		self.setCurrentText(self.fset.FileFormat)
 		
 		# connect changed to tester function for apply
 		self.currentTextChanged.connect(self.ontextchange)
@@ -100,7 +101,7 @@ class SetFileFormat(QComboBox):
 	def ontextchange(self, textbox_in):
 		# check whether text in box different to current save directory
 		# and make apply button active/inactive as appropriate
-		same = (textbox_in == self.camera.FileFormat)
+		same = (textbox_in == self.fset.FileFormat)
 		
 		if same:
 			self.apply_state.emit(False, 'SetFileFormat')
@@ -111,18 +112,18 @@ class SetFileFormat(QComboBox):
 	@pyqtSlot()
 	def applyformatchange(self):
 		# apply file format change
-		self.camera.filenameSetFormat(self.currentText())
+		self.fset.filenameSetFormat(self.currentText())
 		
 class NameFormatPrefix(QLineEdit):
 	
 	# signal to send to apply button
 	apply_state = pyqtSignal(bool, str)
 	
-	def __init__(self, parent, camera):
-		super(NameFormatPrefix, self).__init__(camera.NamePrefix, parent)
+	def __init__(self, parent, fset):
+		super(NameFormatPrefix, self).__init__(fset.NamePrefix, parent)
 		
-		# announce camera
-		self.camera = camera
+		# announce fset
+		self.fset = fset
 
 		# connect text changed to apply button checker
 		self.textChanged.connect(self.ontextchange)
@@ -131,7 +132,7 @@ class NameFormatPrefix(QLineEdit):
 	def ontextchange(self, textbox_in):
 		# check whether text in box different to current save directory
 		# and make apply button active/inactive as appropriate
-		same = (textbox_in == self.camera.NamePrefix)
+		same = (textbox_in == self.fset.NamePrefix)
 		
 		if same:
 			self.apply_state.emit(False, 'NameFormatPrefix')
@@ -142,7 +143,7 @@ class NameFormatPrefix(QLineEdit):
 	@pyqtSlot()
 	def applyprefixchange(self):
 		# set file name format 
-		self.camera.filenameSetPrefix(self.text())
+		self.fset.filenameSetPrefix(self.text())
 		
 		# update apply button
 		self.ontextchange(self.text())
@@ -152,14 +153,18 @@ class NameFormatStamper(QWidget):
 	# signal to send to apply button
 	apply_state = pyqtSignal(bool, str)
 	
-	def __init__(self, parent, camera):
+	def __init__(self, parent, fset):
 		super(NameFormatStamper, self).__init__(parent)
 		
-		# announce camera
-		self.camera = camera
+		# announce fset
+		self.fset = fset
 
 		# init UI
 		self.initUI()
+		
+		# connect check boxes
+		self.checkboxdate.stateChanged.connect(self.ondatestampchange)
+		self.checkboxtime.stateChanged.connect(self.ontimestampchange)
 		
 	def initUI(self):
 		# section layout
@@ -170,10 +175,10 @@ class NameFormatStamper(QWidget):
 		self.checkboxtime = QCheckBox('Time', self)
 		
 		# set check state as appropriate
-		self.checkboxdate.setCheckState(int(self.camera.DateStamp))
+		self.checkboxdate.setCheckState(int(self.fset.DateStamp))
 		self.checkboxdate.setTristate(False)
 		
-		self.checkboxtime.setCheckState(int(self.camera.TimeStamp))
+		self.checkboxtime.setCheckState(int(self.fset.TimeStamp))
 		self.checkboxtime.setTristate(False)
 
 		# add widgets to vertical box layout
@@ -186,16 +191,12 @@ class NameFormatStamper(QWidget):
 		# reduce automatic height
 		self.setFixedHeight(35)
 		
-		# connect check boxes
-		self.checkboxdate.stateChanged.connect(self.ondatestampchange)
-		self.checkboxtime.stateChanged.connect(self.ontimestampchange)
-		
 	@pyqtSlot(int)	
 	def ondatestampchange(self, datecheckbox_in):
 		# check whether datestamp bool matches check box
 		# and make apply button active/inactive as appropriate
-		datesame = (bool(datecheckbox_in) == self.camera.DateStamp)
-		timesame = (self.camera.TimeStamp == self.checkboxtime.isChecked())
+		datesame = (bool(datecheckbox_in) == self.fset.DateStamp)
+		timesame = (self.fset.TimeStamp == self.checkboxtime.isChecked())
 		
 		bothsame = datesame and timesame
 		
@@ -209,8 +210,8 @@ class NameFormatStamper(QWidget):
 	def ontimestampchange(self, timecheckbox_in):
 		# check whether timestamp bool matches check box
 		# and make apply button active/inactive as appropriate
-		timesame = (bool(timecheckbox_in) == self.camera.TimeStamp)
-		datesame = (self.camera.DateStamp == self.checkboxdate.isChecked()) 
+		timesame = (bool(timecheckbox_in) == self.fset.TimeStamp)
+		datesame = (self.fset.DateStamp == self.checkboxdate.isChecked()) 
 		
 		bothsame = datesame and timesame
 		
@@ -223,14 +224,14 @@ class NameFormatStamper(QWidget):
 	@pyqtSlot()
 	def applystampchange(self):
 		# set datestamp bool and update file name
-		self.camera.filenameSetDate(self.checkboxdate.isChecked())
+		self.fset.filenameSetDate(self.checkboxdate.isChecked())
 		
 		# set timestamp bool and update file name
-		self.camera.filenameSetTime(self.checkboxtime.isChecked())
+		self.fset.filenameSetTime(self.checkboxtime.isChecked())
 		
 		# test and update apply button
-		samedate = (self.camera.DateStamp == self.checkboxdate.isChecked()) 
-		sametime = (self.camera.TimeStamp == self.checkboxtime.isChecked())
+		samedate = (self.fset.DateStamp == self.checkboxdate.isChecked()) 
+		sametime = (self.fset.TimeStamp == self.checkboxtime.isChecked())
 		
 		bothsame = samedate and sametime
 
@@ -242,11 +243,11 @@ class NameFormatStamper(QWidget):
 
 class ApplyButton(QPushButton):
 	
-	def __init__(self, parent, camera):
+	def __init__(self, parent, fset):
 		super(ApplyButton, self).__init__(QIcon('resources/done-all.svg'), 'Apply', parent)
 		
-		# announce camera handle
-		self.camera = camera
+		# announce fset handle
+		self.fset = fset
 		
 		# set inactive initially as boxes all contain defaults
 		self.setEnabled(False)
@@ -272,56 +273,21 @@ class ApplyButton(QPushButton):
 		
 class AdvancedSettingsButton(QPushButton):
 	
-	def __init__(self, parent, camera):
+	def __init__(self, parent, fset):
 		super(AdvancedSettingsButton, self).__init__(QIcon('resources/cog.svg'), 'Advanced', parent)
 
-		# announce main window parent and camera
+		# announce main window parent and fset
 		self.parent = parent
-		self.camera = camera
+		self.fset = fset
 		
 		# connect
 		self.clicked.connect(self.open_settings)
 		
 	def open_settings(self):
 		# create and open file settings window dialog box,
-		# with handle on parent and camera object
-		self.window = AdvancedSettingsWindow(self.parent, self.camera)
+		# with handle on parent and fset object
+		self.window = AdvancedSettingsWindow(self.parent, self.fset)
 		self.window.show()
-		
-class AdvancedSettingsWindow(QDialog):
-	
-	def __init__(self, parent, camera):
-		super(AdvancedSettingsWindow, self).__init__(parent)
-		
-		# announce camera variable
-		self.camera = camera
-		
-		# initialise user interface
-		self.initUI()
-		
-	def initUI(self):
-		# set title
-		self.setWindowTitle('Advanced File Settings')
-		
-		# set layout
-		fileset_layout = QFormLayout()
-		
-		# get widgets
-		self.rawcheck = QCheckBox(self)
-		
-		# add widgets to layout
-		fileset_layout.addRow(QLabel('Include raw Bayer data? (JPEG Only)'), self.rawcheck)
-		
-		# set settings_layout as widget layout
-		self.setLayout(fileset_layout)
-		
-		# set window geometry
-		#~ self.setFixedSize(fileset_layout.sizeHint())
-		
-		
-		
-		
-		
 		
 class FileManagementSection(QGroupBox):
 	
@@ -329,7 +295,7 @@ class FileManagementSection(QGroupBox):
 		super(FileManagementSection, self).__init__(parent)
 		
 		# announce camera handle
-		self.camera = camera
+		self.fset = camera.fn
 		
 		# init UI
 		self.initUI()
@@ -345,12 +311,12 @@ class FileManagementSection(QGroupBox):
 		sublayout_fileman = QFormLayout()
 		
 		# initialise widgets
-		self.dirinput = FileDirInput(self, self.camera)
-		self.fileformat = SetFileFormat(self, self.camera)
-		self.nameformat = NameFormatPrefix(self, self.camera)
-		self.namestamper = NameFormatStamper(self, self.camera)
-		self.applybutton = ApplyButton(self, self.camera)
-		self.adsetbutton = AdvancedSettingsButton(self, self.camera)
+		self.dirinput = FileDirInput(self, self.fset)
+		self.fileformat = SetFileFormat(self, self.fset)
+		self.nameformat = NameFormatPrefix(self, self.fset)
+		self.namestamper = NameFormatStamper(self, self.fset)
+		self.applybutton = ApplyButton(self, self.fset)
+		self.adsetbutton = AdvancedSettingsButton(self, self.fset)
 
 		# add widgets to vertical box layout
 		sublayout_fileman.addRow(QLabel('Save Directory:'), self.dirinput)
