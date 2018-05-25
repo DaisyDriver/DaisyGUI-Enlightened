@@ -103,7 +103,7 @@ class PreviewButton(QPushButton):
 class SnapshotButton(QPushButton):
 	
 	def __init__(self, parent, camera):
-		super(SnapshotButton, self).__init__(QIcon('resources/camera.svg'), '  Take Snapshot', parent)
+		super(SnapshotButton, self).__init__(QIcon('resources/camera.svg'), '  Take Picture', parent)
 		
 		# set initial button function to start preview
 		self.clicked.connect(camera.capture)

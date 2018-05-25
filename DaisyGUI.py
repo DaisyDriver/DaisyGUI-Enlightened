@@ -1,6 +1,6 @@
 import sys
-from src import main_window
+from src import mainwindow
 
 if __name__ == '__main__':
 	
-	sys.exit(main_window.run())
+	sys.exit(mainwindow.run())

@@ -149,6 +149,9 @@ class NameFormatPrefix(QLineEdit):
 		
 class NameFormatStamper(QWidget):
 	
+	# signal to send to apply button
+	apply_state = pyqtSignal(bool)
+	
 	def __init__(self, parent, camera):
 		super(NameFormatStamper, self).__init__(parent)
 		
@@ -165,38 +168,78 @@ class NameFormatStamper(QWidget):
 		# initialise widgets
 		self.checkboxdate = QCheckBox('Date', self)
 		self.checkboxtime = QCheckBox('Time', self)
+		
+		# set check state as appropriate
+		self.checkboxdate.setCheckState(int(self.camera.DateStamp))
+		self.checkboxdate.setTristate(False)
+		
+		self.checkboxtime.setCheckState(int(self.camera.TimeStamp))
+		self.checkboxtime.setTristate(False)
 
 		# add widgets to vertical box layout
 		sublayout_namestamp.addWidget(self.checkboxdate)
 		sublayout_namestamp.addWidget(self.checkboxtime)
-
+		
 		# set sublayout as widget layout
 		self.setLayout(sublayout_namestamp)
 		
 		# reduce automatic height
 		self.setFixedHeight(35)
 		
-	#~ @pyqtSlot(str)	
-	#~ def ontextchange(self, textbox_in):
-		#~ # check whether text in box different to current save directory
-		#~ # and make apply button active/inactive as appropriate
-		#~ same = (textbox_in == self.camera.NamePrefix)
+		# connect check boxes
+		self.checkboxdate.stateChanged.connect(self.ondatestampchange)
+		self.checkboxtime.stateChanged.connect(self.ontimestampchange)
 		
-		#~ if same:
-			#~ self.nameupdate.setEnabled(False)
+	@pyqtSlot(int)	
+	def ondatestampchange(self, datecheckbox_in):
+		# check whether datestamp bool matches check box
+		# and make apply button active/inactive as appropriate
+		datesame = (bool(datecheckbox_in) == self.camera.DateStamp)
+		timesame = (self.camera.TimeStamp == self.checkboxtime.isChecked())
+		
+		bothsame = datesame and timesame
+		
+		if bothsame:
+			self.apply_state.emit(False)
 			
-		#~ elif not same:
-			#~ self.nameupdate.setEnabled(True)
+		elif not bothsame:
+			self.apply_state.emit(True)
 			
-	#~ @pyqtSlot()
-	#~ def applytextchange(self):
-		#~ # set file name format 
-		#~ self.camera.filenameSetPrefix(self.nameinput.text())
+	@pyqtSlot(int)	
+	def ontimestampchange(self, timecheckbox_in):
+		# check whether timestamp bool matches check box
+		# and make apply button active/inactive as appropriate
+		timesame = (bool(timecheckbox_in) == self.camera.TimeStamp)
+		datesame = (self.camera.DateStamp == self.checkboxdate.isChecked()) 
 		
-		#~ # update apply button
-		#~ self.ontextchange(self.nameinput.text())
+		bothsame = datesame and timesame
 		
+		if bothsame:
+			self.apply_state.emit(False)
+			
+		elif not bothsame:
+			self.apply_state.emit(True)
+			
+	@pyqtSlot()
+	def applystampchange(self):
+		# set datestamp bool and update file name
+		self.camera.filenameSetDate(self.checkboxdate.isChecked())
 		
+		# set timestamp bool and update file name
+		self.camera.filenameSetTime(self.checkboxtime.isChecked())
+		
+		# test and update apply button
+		samedate = (self.camera.DateStamp == self.checkboxdate.isChecked()) 
+		sametime = (self.camera.TimeStamp == self.checkboxtime.isChecked())
+		
+		bothsame = samedate and sametime
+
+		if bothsame:
+			self.apply_state.emit(False)
+			
+		elif not bothsame:
+			self.apply_state.emit(True)	
+
 class ApplyButton(QPushButton):
 	
 	def __init__(self, parent, camera):
@@ -208,10 +251,18 @@ class ApplyButton(QPushButton):
 		# set inactive initially as boxes all contain defaults
 		self.setEnabled(False)
 		
+class AdvancedSettingsWindow(QDialog):
+	
+	def __init__(self, parent, camera):
+		super(AdvancedSettingsWindow, self).__init__(parent)
+		
+		# announce camera variable
+		self.camera = camera
+		
 class AdvancedSettingsButton(QPushButton):
 	
 	def __init__(self, parent, camera):
-		super(AdvancedSettingsButton, self).__init__(QIcon('resources/cog.svg'), 'Settings', parent)
+		super(AdvancedSettingsButton, self).__init__(QIcon('resources/cog.svg'), 'Advanced', parent)
 		
 		# announce camera handle
 		self.camera = camera
@@ -229,7 +280,7 @@ class FileManagementSection(QGroupBox):
 		
 	def initUI(self):
 		# general settings
-		self.setTitle('File Management')
+		self.setTitle('File Settings')
 		
 		# section layout
 		sublayout_fileman = QFormLayout()
@@ -274,6 +325,12 @@ class FileManagementSection(QGroupBox):
 		self.nameformat.apply_state.connect(self.applybutton.setEnabled)
 		# from apply button to directory text box
 		self.applybutton.clicked.connect(self.nameformat.applyprefixchange)
+		
+		# from date/time stamp check boxes to apply button
+		self.namestamper.apply_state.connect(self.applybutton.setEnabled)
+		self.namestamper.apply_state.connect(self.applybutton.setEnabled)
+		# from apply button to date/time stamp box confirmation
+		self.applybutton.clicked.connect(self.namestamper.applystampchange)
 		
 
 

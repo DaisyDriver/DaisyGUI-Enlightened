@@ -63,14 +63,19 @@ class Camera(PiCamera):
 		self.NamePrefix = Prefix_in
 		self.filenamehelper(self.NamePrefix, self.DateStamp, self.TimeStamp, self.FileFormat)
 		
-	def filenameSetTime(self, TimeBool_in):
-		# update date stamp status and name accordingly
-		self.TimeStamp = TimeBool_in
-		self.filenamehelper(self.NamePrefix, self.DateStamp, self.TimeStamp, self.FileFormat)
-		
 	def filenameSetFormat(self, Fformat_in):
 		# update file format and name accordingly
 		self.FileFormat = Fformat_in
+		self.filenamehelper(self.NamePrefix, self.DateStamp, self.TimeStamp, self.FileFormat)
+		
+	def filenameSetDate(self, DateBool_in):
+		# update date stamp status and name accordingly
+		self.DateStamp = DateBool_in
+		self.filenamehelper(self.NamePrefix, self.DateStamp, self.TimeStamp, self.FileFormat)
+		
+	def filenameSetTime(self, TimeBool_in):
+		# update time stamp status and name accordingly
+		self.TimeStamp = TimeBool_in
 		self.filenamehelper(self.NamePrefix, self.DateStamp, self.TimeStamp, self.FileFormat)
 		
 	def capture(self):
