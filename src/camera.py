@@ -17,13 +17,20 @@ class FileNameHelper():
 		self.FileFormat = 'jpeg'
 		self.filenamehelper(self.NamePrefix, self.DateStamp, self.TimeStamp, self.FileFormat)
 		
-		# for custom file names, add format programatically
+		# for custom file names, add default format programatically
 		self.custombool = False
 		self.customname = 'Im_day{timestamp:%Y%m%d}_time{timestamp:%H-%M-%S-%f}'
 				
 		# jpg format settings
 		self.bayerInclude = True
 		self.JPGquality = 100
+		
+	def filenameswitcher(self):
+		# for turning custom name on/off
+		if self.custombool:
+			self.filename_unformat = self.customname + '.' + self.FileFormat
+		elif not self.custombool:
+			self.filenamehelper(self.NamePrefix, self.DateStamp, self.TimeStamp, self.FileFormat)
 		
 	def filenamehelper(self, prefix, Date, Time, Fformat):
 		# init file name

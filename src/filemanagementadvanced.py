@@ -63,7 +63,6 @@ class QualJPEG(QWidget):
 		self.makeconnections()
 		
 	def initUI(self):
-		
 		# QualJPEG layout
 		qual_layout = QGridLayout()
 		
@@ -102,14 +101,13 @@ class QualJPEG(QWidget):
 		
 	@pyqtSlot()
 	def updateslideposition(self):
-		
 		# get text
 		textnumber = self.qualnum.text()
 		
 		# check for validity
-		validnums = '0123456789'
+		validchars = '0123456789'
 		
-		if not all([char in validnums for char in textnumber]):
+		if not all([char in validchars for char in textnumber]):
 			error_dialog = QMessageBox.critical(self, 'Incorrect number input', 
 												'Input number must be an integer between 1 and 100 inclusive',
 												QMessageBox.Ok)
@@ -143,11 +141,117 @@ class QualJPEG(QWidget):
 			
 		elif not same:
 			self.apply_state.emit(True, 'QualJPEG')
-				
+			
+	@pyqtSlot()
+	def applyqualchange(self):
+		# set fset to value
+		self.fset.JPGquality = self.qualslide.value()
+		
+		# update apply button
+		self.onslidechange(self.qualslide.value())
+			
+class CustomFileName(QWidget):
+	
+	# signal to send to apply button
+	apply_state = pyqtSignal(bool, str)
+	# signal to enable/disable non custom file name settings
+	custom_state = pyqtSignal(bool)
+	
+	def __init__(self, parent, fset):
+		super(CustomFileName, self).__init__(parent)
+		
+		# announce fset
+		self.fset = fset
+		
+		# init ui
+		self.initUI()
+		
+		# connect check boxes
+		self.customswitch.stateChanged.connect(self.customstateswitch)
+		self.customswitch.stateChanged.connect(self.customapplyswitch)
+		
+		# connect text box
+		self.customname.textEdited.connect(self.customapplyname)
+		
+	def initUI(self):
+		
+		# set layout
+		cfn_layout = QHBoxLayout()
+		
+		# add widgets
+		self.customswitch = QCheckBox(self)
+		self.customname = QLineEdit(self.fset.customname, self)
+		
+		# set custom state as appropriate
+		self.customswitch.setCheckState(int(self.fset.custombool))
+		self.customswitch.setTristate(False)
+		self.customname.setEnabled(self.fset.custombool)
+		
+		# add widgets to layout
+		cfn_layout.addWidget(self.customswitch)
+		cfn_layout.addWidget(self.customname)
+		
+		# set layout to widget
+		self.setLayout(cfn_layout)
+		
+		# adjust geometries
+		self.customname.setFixedWidth(400)
+		self.setFixedHeight(45)
+		
+	@pyqtSlot(int)	
+	def customapplyswitch(self, customswitch_in):
+		# check whether custombool matches check box
+		# and make apply button active/inactive as appropriate
+		same = (bool(customswitch_in) == self.fset.custombool)
+		
+		if same:
+			self.apply_state.emit(False, 'CustomFileSwitch')
+			
+		elif not same:
+			self.apply_state.emit(True, 'CustomFileSwitch')
+			
+	@pyqtSlot(int)	
+	def customstateswitch(self, customswitch_in):
+		# get custom as bool
+		val = bool(customswitch_in)
+		
+		# emit state to non custom boxes
+		self.custom_state.emit(not val)
+		
+		# set custom text box state
+		self.customname.setEnabled(val)
+			
+	@pyqtSlot(str)	
+	def customapplyname(self, customname_in):
+		# check whether customname matches line edit box
+		# and make apply button active/inactive as appropriate
+		same = (customname_in == self.fset.customname)
+		
+		if same:
+			self.apply_state.emit(False, 'CustomFileName')
+			
+		elif not same:
+			self.apply_state.emit(True, 'CustomFileName')
+
+	@pyqtSlot()
+	def applycustomchange(self):
+		# set custom file name to line edit contents
+		self.fset.customname = self.customname.text()
+		
+		# set custom bool
+		self.fset.custombool = self.customswitch.isChecked()
+		
+		# update name using helper function
+		self.fset.filenameswitcher()
+		
+		# update apply button
+		self.apply_state.emit(False, 'CustomFileName')
+		self.apply_state.emit(False, 'CustomFileSwitch')
+			
 class ApplyButton(QPushButton):
 	
 	def __init__(self, parent, fset):
-		super(ApplyButton, self).__init__(QIcon('resources/done-all.svg'), 'Apply and Close Window', parent)
+		super(ApplyButton, self).__init__(QIcon('resources/done-all.svg'), 'Apply', parent)
 		
 		# announce fset handle
 		self.fset = fset
@@ -156,7 +260,7 @@ class ApplyButton(QPushButton):
 		self.setEnabled(False)
 		
 		# dictionary keeping track of all changed
-		self.changedict = {'RawCheck':False, 'QualJPEG':False, 'CustomFileName':False}
+		self.changedict = {'RawCheck':False, 'QualJPEG':False, 'CustomFileSwitch':False, 'CustomFileName':False}
 	
 	@pyqtSlot(bool, str)
 	def individualSetEnable(self, inbool, inkey):
@@ -172,11 +276,30 @@ class ApplyButton(QPushButton):
 		
 		elif any(value == True for value in self.changedict.values()):
 			self.setEnabled(True)
+			
+class CancelButton(QPushButton):
+	
+	def __init__(self, parent):
+		super(CancelButton, self).__init__('Close', parent)
+		
+		# announce parent
+		self.parent = parent
+		
+		# connect click to close parent
+		self.clicked.connect(self.closedialog)
+		
+	@pyqtSlot()
+	def closedialog(self):
+		# close parent window (advanced settings)
+		self.parent.close()		
 
 class AdvancedSettingsWindow(QDialog):
 	
 	def __init__(self, parent, fset):
 		super(AdvancedSettingsWindow, self).__init__(parent)
+		
+		# announce parent
+		self.parent = parent
 		
 		# announce fset variable
 		self.fset = fset
@@ -197,15 +320,14 @@ class AdvancedSettingsWindow(QDialog):
 		# get widgets
 		self.rawcheck = RawCheck(self, self.fset)
 		self.qualjpeg = QualJPEG(self, self.fset)
-		
+		self.custname = CustomFileName(self, self.fset)
 		self.applybutton = ApplyButton(self, self.fset)
 		
 		# add widgets to layout
 		fileset_layout.addRow(QLabel('Include raw Bayer data? (JPEG only)'), self.rawcheck)
 		fileset_layout.addRow(QLabel('Quality of compression (JPEG only)'), self.qualjpeg)
-		
-		
-		fileset_layout.addRow(QLabel('cancel placeholder'), self.applybutton)
+		fileset_layout.addRow(QLabel('Use custom file name?'), self.custname)
+		fileset_layout.addRow(CancelButton(self), self.applybutton)
 		
 		# set settings_layout as widget layout
 		self.setLayout(fileset_layout)
@@ -223,19 +345,12 @@ class AdvancedSettingsWindow(QDialog):
 		# from jpeg quality slider to apply button
 		self.qualjpeg.apply_state.connect(self.applybutton.individualSetEnable)
 		# from apply button to slider set
-		#~ self.applybutton.clicked.connect(self.rawcheck.applyqualchange)
-
-		#~ # from file format combo box to apply button
-		#~ self.fileformat.apply_state.connect(self.applybutton.individualSetEnable)
-		#~ # from apply button to format combox box
-		#~ self.applybutton.clicked.connect(self.fileformat.applyformatchange)
+		self.applybutton.clicked.connect(self.qualjpeg.applyqualchange)
 		
-		#~ # from name prefix text box to apply button
-		#~ self.nameformat.apply_state.connect(self.applybutton.individualSetEnable)
-		#~ # from apply button to directory text box
-		#~ self.applybutton.clicked.connect(self.nameformat.applyprefixchange)
-		
-		#~ # from date/time stamp check boxes to apply button
-		#~ self.namestamper.apply_state.connect(self.applybutton.individualSetEnable)
-		#~ # from apply button to date/time stamp box confirmation
-		#~ self.applybutton.clicked.connect(self.namestamper.applystampchange)
+		# from custom state to apply
+		self.custname.apply_state.connect(self.applybutton.individualSetEnable)
+		# from advanced settings to normal settings
+		self.custname.custom_state.connect(self.parent.nameformat.setEnabled)
+		self.custname.custom_state.connect(self.parent.namestamper.setEnabled)
+		# from apply button to custom state apply
+		self.applybutton.clicked.connect(self.custname.applycustomchange)

@@ -352,6 +352,7 @@ class FileManagementSection(QGroupBox):
 		self.namestamper.apply_state.connect(self.applybutton.individualSetEnable)
 		# from apply button to date/time stamp box confirmation
 		self.applybutton.clicked.connect(self.namestamper.applystampchange)
+
 		
 
 
