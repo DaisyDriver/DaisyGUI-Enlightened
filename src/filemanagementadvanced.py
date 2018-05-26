@@ -215,9 +215,6 @@ class CustomFileName(QWidget):
 		# get custom as bool
 		val = bool(customswitch_in)
 		
-		# emit state to non custom boxes
-		self.custom_state.emit(not val)
-		
 		# set custom text box state
 		self.customname.setEnabled(val)
 			
@@ -247,6 +244,9 @@ class CustomFileName(QWidget):
 		# update apply button
 		self.apply_state.emit(False, 'CustomFileName')
 		self.apply_state.emit(False, 'CustomFileSwitch')
+		
+		# emit state to non custom boxes
+		self.custom_state.emit(not self.customswitch.isChecked())
 			
 class ApplyButton(QPushButton):
 	

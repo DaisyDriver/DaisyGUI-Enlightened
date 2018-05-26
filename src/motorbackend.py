@@ -1,49 +1,90 @@
-import serial
+from serial import Serial
+from threading import Thread, Lock
 
-class DaisyDriver():
+class DaisyDriver(Serial):
 	
 	def __init__(self):
 		# initialise DaisyDriver serial object (hard code serial address for now)
-		self.DD = serial.Serial('/dev/ttyACM0')
+		super(DaisyDriver, self).__init__('/dev/ttyACM0')
 		
-	def __jog(self, x, y, z):
+		# set initial speed (0,1,2 for low,medium,high respectively)
+		self.speedset(2)
+		
+		# initialise jog lock
+		self.joglock = Lock()
+		
+		# initialise direction dictionary, f = forward, fl = forward left etc...
+		self.directions = {'l':(1, 0, 0),
+							'r':(-1, 0, 0),
+							'f':(0, 1, 0),
+							'fl':(1, 1, 0),
+							'fr':(-1, 1, 0),
+							'b':(0, -1, 0),
+							'bl':(1, -1, 0),
+							'br':(-1, -1, 0),
+							'u':(0, 0, 1),
+							'd':(0, 0, -1)}
+		
+	def speedset(self, val):
+		# speed val
+		self.speedval = val
+		
+		# speed from slider equals 1, 2 or 3. Use list for converting 
+		# slider index to step motor speed
+		speeds = [50, 275, 500]
+		
 		# serial command
-		command = 'JOG 0 {x_} {y_} {z_} \r'.format(x_=x, y_=y, z_=z)
+		command = 'STV 0 {V} {V} {V} \r'.format(V=speeds[self.speedval])
 		
 		# convert to byte string
 		bytes_command = command.encode('utf-8')
 		
 		# write command
-		self.DD.write(bytes_command)
+		self.write(bytes_command)
 		
-	def jogLeft(self):
-		self.__jog(1, 0, 0)
+		# flush buffer
+		self.flush()
 		
-	def jogRight(self):
-		self.__jog(-1, 0, 0)
+	def __jogdo(self, x, y, z):
+		# enable lock
+		with self.joglock:
+						
+			# flush buffer
+			self.flush()
+			
+			# serial command
+			command = 'JOG 0 {x_} {y_} {z_} \r'.format(x_=x, y_=y, z_=z)
+			
+			# convert to byte string
+			bytes_command = command.encode('utf-8')
+			
+			# write command
+			self.write(bytes_command)
+			
+			# read finish statement and print
+			self.readline()
+			
+	def __jog(self, x, y, z, button_handle):
+		# count, button status dependent
+		count = 0
 		
-	def jogUpY(self):
-		self.__jog(0, 1, 0)
+		# upper limit on jog repeats
+		while count < 5:
+			if (count == 0):
+				self.__jogdo(x, y, z)
 		
-	def jogUpLeft(self):
-		self.__jog(1, 1, 0)
+			elif button_handle.isDown():
+				self.__jogdo(x, y, z)
+				
+			count+=1
 		
-	def jogUpRight(self):
-		self.__jog(-1, 1, 0)
-		
-	def jogDownY(self):
-		self.__jog(0, -1, 0)
-
-	def jogDownLeft(self):
-		self.__jog(1, -1, 0)
-		
-	def jogDownRight(self):
-		self.__jog(-1, -1, 0)
-		
-	def jogUpZ(self):
-		self.__jog(0, 0, 1)
-		
-	def jogDownZ(self):
-		self.__jog(0, 0, -1)
+	def jog(self, direction, button_handle):
+		# if not locked then jog
+		if not self.joglock.locked():
+			# get direction vector
+			dir_tuple = self.directions[direction]
+			# start jog
+			jogthread = Thread(target=self.__jog, args=(*dir_tuple, button_handle))
+			jogthread.start()
 		
 

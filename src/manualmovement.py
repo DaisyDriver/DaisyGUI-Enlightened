@@ -1,17 +1,24 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import pyqtSignal
 
 class ManMoveSpeed(QGroupBox):
 	
-	def __init__(self, parent):
+	def __init__(self, parent, daisydriver):
 		super(ManMoveSpeed, self).__init__(parent)
 		
 		# announce parent
 		self.parent = parent
 		
+		# announce daisy driver
+		self.DD = daisydriver
+		
 		# initialise user interface
 		self.initUI()
+		
+		# connect slider to daisy driver speed change function
+		self.speedslider.valueChanged.connect(self.DD.speedset)
 		
 	def initUI(self):
 		# general settings
@@ -22,12 +29,12 @@ class ManMoveSpeed(QGroupBox):
 		
 		# initialise widgets
 		self.speedslider = QSlider(Qt.Vertical, self.parent)
-		self.speedslider.setMinimum(1)
-		self.speedslider.setMaximum(3)
+		self.speedslider.setMinimum(0)
+		self.speedslider.setMaximum(2)
 		self.speedslider.setTickPosition(QSlider.TicksLeft)
 		self.speedslider.setTickInterval(1)
 		self.speedslider.setFixedHeight(115)
-		self.speedslider.setValue(3)
+		self.speedslider.setValue(self.DD.speedval)
 
 		self.hispeed = QLabel('High')
 		self.medspeed = QLabel('Med')
@@ -44,14 +51,38 @@ class ManMoveSpeed(QGroupBox):
 		
 		# set geometry
 		self.setFixedSize(85, 175)
-
+		
+class XYbutton(QPushButton):
+	
+	def __init__(self, icon, parent, daisydriver, direction):
+		super(XYbutton, self).__init__(icon, '', parent)
+		
+		# announce daisydriver
+		self.DD = daisydriver
+		
+		# announce direction
+		self.direction = direction
+		
+		# set geometry
+		self.setFixedSize(40, 40)
+		
+		# connect click
+		self.pressed.connect(self.on_click)
+		
+	def on_click(self):
+		# on click send jog info to daisydriver object
+		self.DD.jog(self.direction, self)
+		
 class ManMoveXY(QGroupBox):
 	
-	def __init__(self, parent):
+	def __init__(self, parent, daisydriver):
 		super(ManMoveXY, self).__init__(parent)
 		
 		# announce parent
 		self.parent = parent
+		
+		# announce daisydriver
+		self.DD = daisydriver
 		
 		# initialise user interface
 		self.initUI()
@@ -64,24 +95,14 @@ class ManMoveXY(QGroupBox):
 		sublayout_XY = QGridLayout()
 		
 		# initialise widgets
-		self.left = QPushButton(QIcon('resources/bubble_left.svg'), '', self.parent)
-		self.right = QPushButton(QIcon('resources/bubble_right.svg'), '', self.parent)
-		self.up = QPushButton(QIcon('resources/bubble_up.svg'), '', self.parent)
-		self.upright = QPushButton(QIcon('resources/bubble_upright.svg'), '', self.parent)
-		self.upleft = QPushButton(QIcon('resources/bubble_upleft.svg'), '', self.parent)
-		self.down = QPushButton(QIcon('resources/bubble_down.svg'), '', self.parent)
-		self.downright = QPushButton(QIcon('resources/bubble_downright.svg'), '', self.parent)
-		self.downleft = QPushButton(QIcon('resources/bubble_downleft.svg'), '', self.parent)
-		
-		# set size
-		self.left.setFixedSize(40, 40)
-		self.right.setFixedSize(40, 40)
-		self.up.setFixedSize(40, 40)
-		self.upright.setFixedSize(40, 40)
-		self.upleft.setFixedSize(40, 40)
-		self.down.setFixedSize(40, 40)
-		self.downright.setFixedSize(40, 40)
-		self.downleft.setFixedSize(40, 40)
+		self.left = XYbutton(QIcon('resources/bubble_left.svg'), self.parent, self.DD, 'l')
+		self.right = XYbutton(QIcon('resources/bubble_right.svg'), self.parent, self.DD, 'r')
+		self.up = XYbutton(QIcon('resources/bubble_up.svg'), self.parent, self.DD, 'f')
+		self.upright = XYbutton(QIcon('resources/bubble_upright.svg'), self.parent, self.DD, 'fr')
+		self.upleft = XYbutton(QIcon('resources/bubble_upleft.svg'), self.parent, self.DD, 'fl')
+		self.down = XYbutton(QIcon('resources/bubble_down.svg'), self.parent, self.DD, 'b')
+		self.downright = XYbutton(QIcon('resources/bubble_downright.svg'), self.parent, self.DD, 'br')
+		self.downleft = XYbutton(QIcon('resources/bubble_downleft.svg'), self.parent, self.DD, 'bl')
 		
 		# add widgets to vertical box layout
 		sublayout_XY.addWidget(self.left, 1, 0, 1, 1)
@@ -98,14 +119,39 @@ class ManMoveXY(QGroupBox):
 		
 		# set geometry
 		self.setFixedSize(150, 175)
+		
+class Zbutton(QPushButton):
+	
+	def __init__(self, icon, parent, daisydriver, direction):
+		super(Zbutton, self).__init__(icon, '', parent)
+		
+		# announce daisydriver
+		self.DD = daisydriver
+		
+		# announce direction
+		self.direction = direction
+		
+		# set geometry
+		self.setFixedSize(40, 58)
+		self.setIconSize(QSize(23, 23))
+		
+		# connect click
+		self.pressed.connect(self.on_click)
+		
+	def on_click(self):
+		# on click send jog info to daisydriver object
+		self.DD.jog(self.direction, self)
 
 class ManMoveZ(QGroupBox):
 	
-	def __init__(self, parent):
+	def __init__(self, parent, daisydriver):
 		super(ManMoveZ, self).__init__(parent)
 		
 		# announce parent
 		self.parent = parent
+		
+		# announce daisydriver
+		self.DD = daisydriver
 		
 		# initialise user interface
 		self.initUI()
@@ -118,15 +164,8 @@ class ManMoveZ(QGroupBox):
 		sublayout_Z = QGridLayout()
 		
 		# initialise widgets
-		self.up = QPushButton(QIcon('resources/arrowup.svg'), '', self.parent)
-		self.down = QPushButton(QIcon('resources/arrowdown.svg'), '', self.parent)
-		
-		# set size
-		self.up.setFixedSize(40, 58)
-		self.up.setIconSize(QSize(23, 23))
-		
-		self.down.setFixedSize(40, 58)
-		self.down.setIconSize(QSize(23, 23))
+		self.up = Zbutton(QIcon('resources/arrowup.svg'), self.parent, self.DD, 'u')
+		self.down = Zbutton(QIcon('resources/arrowdown.svg'), self.parent, self.DD, 'd')
 		
 		# add widgets to vertical box layout
 		sublayout_Z.addWidget(self.up, 0, 0, 2, 1)
@@ -140,18 +179,21 @@ class ManMoveZ(QGroupBox):
 
 class ManualMovementSection(QGroupBox):
 	
-	def __init__(self, parent, camera):
+	def __init__(self, parent, camera, daisydriver):
 		super(ManualMovementSection, self).__init__(parent)
 		
 		# announce parent (main window)
 		self.main_window = parent
+		
+		# announce daisy driver handle
+		self.DD = daisydriver
 		
 		# get customised PiCamera instance (need to know which camera/motors?)
 		self.camera = camera
 		
 		# initialise user interface
 		self.initUI()
-		
+
 	def initUI(self):
 		# general settings
 		self.setTitle('Manual Movement')
@@ -160,9 +202,9 @@ class ManualMovementSection(QGroupBox):
 		sublayout_manmove = QHBoxLayout()
 		
 		# initialise widgets
-		self.manSpeed = ManMoveSpeed(self)
-		self.manXY= ManMoveXY(self)
-		self.manZ = ManMoveZ(self)
+		self.manSpeed = ManMoveSpeed(self, self.DD)
+		self.manXY= ManMoveXY(self, self.DD)
+		self.manZ = ManMoveZ(self, self.DD)
 
 		# add widgets to vertical box layout
 		sublayout_manmove.addWidget(self.manSpeed)
