@@ -86,6 +86,9 @@ class QualJPEG(QWidget):
 		# set layout to widget
 		self.setLayout(qual_layout)
 		
+		# set geometry
+		self.setFixedHeight(55)
+		
 	def makeconnections(self):
 		# connect slide change to text box
 		self.qualslide.valueChanged.connect(self.updateboxnumber)
@@ -196,7 +199,7 @@ class CustomFileName(QWidget):
 		
 		# adjust geometries
 		self.customname.setFixedWidth(400)
-		self.setFixedHeight(45)
+		self.setFixedHeight(55)
 		
 	@pyqtSlot(int)	
 	def customapplyswitch(self, customswitch_in):
@@ -333,7 +336,7 @@ class AdvancedSettingsWindow(QDialog):
 		self.setLayout(fileset_layout)
 		
 		# set window geometry
-		#~ self.setFixedSize(fileset_layout.sizeHint())
+		self.setFixedSize(fileset_layout.sizeHint())
 		
 	def makeconnections(self):
 		

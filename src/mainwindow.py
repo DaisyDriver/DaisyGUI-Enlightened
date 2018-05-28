@@ -5,6 +5,7 @@ from src.camera import Camera
 from src.manualmovement import ManualMovementSection
 from src.filemanagement import FileManagementSection
 from src.motorbackend import DaisyDriver
+from src.cameratimer import CameraTimerSection
 
 class MainWindow(QWidget):
 	
@@ -22,7 +23,7 @@ class MainWindow(QWidget):
 	
 	def initUI(self):
 		# general settings
-		self.setWindowTitle('DaisyGUI v0.5')
+		self.setWindowTitle('DaisyGUI v0.7')
 		
 		# main layout
 		mainlayout = QGridLayout()
@@ -31,11 +32,13 @@ class MainWindow(QWidget):
 		self.camerasection = CameraSection(self, self.camera)
 		self.filemanagement = FileManagementSection(self, self.camera)
 		self.manualmovement = ManualMovementSection(self, self.camera, self.DD)
+		self.cameratimer = CameraTimerSection(self, self.camera)
 		
 		# add widgets to main layout
 		mainlayout.addWidget(self.camerasection, 0, 0, 3, 1)
 		mainlayout.addWidget(self.filemanagement, 0, 1, 1, 1)
 		mainlayout.addWidget(self.manualmovement, 1, 1, 1, 1)
+		mainlayout.addWidget(self.cameratimer, 2, 1, 1, 1)
 
 		# set mainlayout as widget layout
 		self.setLayout(mainlayout)
