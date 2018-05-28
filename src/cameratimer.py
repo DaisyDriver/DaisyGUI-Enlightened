@@ -2,6 +2,73 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 
+class EveryFor(QWidget):
+	
+	def __init__(self, parent, camera):
+		super(EveryFor, self).__init__(parent)
+		
+		# announce camera
+		self.camera = camera
+		
+		# init UI
+		self.initUI()
+		
+	def initUI(self):
+		# set layout
+		sublayout_everyfor = QHBoxLayout()
+		
+		# get widgets
+		self.everylabel = QLabel('Every', self)
+		self.everytext = QLineEdit(self)
+		self.everybox = QComboBox(self)
+		self.forlabel = QLabel('for', self)
+		self.fortext = QLineEdit(self)
+		self.forbox = QComboBox(self)
+		
+		# edit widgets appearances'
+		self.everytext.setFixedWidth(55)
+		self.fortext.setFixedWidth(55)
+		
+		self.everybox.setFixedWidth(90)
+		self.everybox.addItem('seconds')
+		self.everybox.addItem('minutes')
+		
+		self.forbox.setFixedWidth(87)
+		self.forbox.addItem('minutes')
+		self.forbox.addItem('hours')
+		
+		# add widgets to layout
+		sublayout_everyfor.addWidget(self.everylabel)
+		sublayout_everyfor.addWidget(self.everytext)
+		sublayout_everyfor.addWidget(self.everybox)
+		sublayout_everyfor.addWidget(self.forlabel)
+		sublayout_everyfor.addWidget(self.fortext)
+		sublayout_everyfor.addWidget(self.forbox)
+		
+		# set sublayout to widget
+		self.setLayout(sublayout_everyfor)
+		
+class TakeWithGap(QWidget):
+	
+	def __init__(self, parent, camera):
+		super(TakeWithGap, self).__init__(parent)
+		
+		# announce camera
+		self.camera = camera
+		
+		# init UI
+		self.initUI
+		
+	def initUI(self):
+		# set layout
+		sublayout_takewithgap = QHBoxLayout()
+		
+		# get widgets
+		
+
+		
+		
+
 class CameraTimerSection(QGroupBox):
 	
 	def __init__(self, parent, camera):
@@ -12,46 +79,24 @@ class CameraTimerSection(QGroupBox):
 		
 		# init UI
 		self.initUI()
-
-		# make connections between slots and signals
-		#~ self.makeconnections()
 		
 	def initUI(self):
 		# general settings
 		self.setTitle('Camera Timer')
 		
 		# section layout
-		sublayout_fileman = QFormLayout()
+		sublayout_cameratimer = QVBoxLayout()
 		
 		# initialise widgets
+		self.everyfor = EveryFor(self, self.camera)
 
 		# add widgets to vertical box layout
+		sublayout_cameratimer.addWidget(self.everyfor)
 
 		# set sublayout as widget layout
-		self.setLayout(sublayout_fileman)
+		self.setLayout(sublayout_cameratimer)
 		
 		# set geometry
 		#~ self.setFixedSize(sublayout_fileman.sizeHint())
 		
-	#~ def makeconnections(self):
-		
-		#~ # from directory text box to apply button
-		#~ self.dirinput.apply_state.connect(self.applybutton.individualSetEnable)
-		#~ # from apply button to directory text box
-		#~ self.applybutton.clicked.connect(self.dirinput.applydirchange)
-
-		#~ # from file format combo box to apply button
-		#~ self.fileformat.apply_state.connect(self.applybutton.individualSetEnable)
-		#~ # from apply button to format combox box
-		#~ self.applybutton.clicked.connect(self.fileformat.applyformatchange)
-		
-		#~ # from name prefix text box to apply button
-		#~ self.nameformat.apply_state.connect(self.applybutton.individualSetEnable)
-		#~ # from apply button to directory text box
-		#~ self.applybutton.clicked.connect(self.nameformat.applyprefixchange)
-		
-		#~ # from date/time stamp check boxes to apply button
-		#~ self.namestamper.apply_state.connect(self.applybutton.individualSetEnable)
-		#~ # from apply button to date/time stamp box confirmation
-		#~ self.applybutton.clicked.connect(self.namestamper.applystampchange)
 
