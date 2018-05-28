@@ -13,6 +13,8 @@ class EveryFor(QWidget):
 		# init UI
 		self.initUI()
 		
+		# connect signals to slots
+		
 	def initUI(self):
 		# set layout
 		sublayout_everyfor = QHBoxLayout()
@@ -47,6 +49,8 @@ class EveryFor(QWidget):
 		
 		# set sublayout to widget
 		self.setLayout(sublayout_everyfor)
+		
+	#~ def 
 		
 class TakeWithGap(QWidget):
 	

@@ -194,12 +194,6 @@ class CustomFileName(QWidget):
 		cfn_layout.addWidget(self.customswitch)
 		cfn_layout.addWidget(self.customname)
 		
-		# set margins
-		print(cfn_layout.contentsMargins().left())
-		print(cfn_layout.contentsMargins().top())
-		print(cfn_layout.contentsMargins().right())
-		print(cfn_layout.contentsMargins().bottom())
-		
 		# set layout to widget
 		self.setLayout(cfn_layout)
 		
