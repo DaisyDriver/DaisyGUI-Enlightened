@@ -14,22 +14,22 @@ class DaisyDriver(Serial):
 		self.joglock = Lock()
 		
 		# initialise direction dictionary, f = forward, fl = forward left etc...
-		self.directions = {'l':(1, 0, 0),
-							'r':(-1, 0, 0),
-							'f':(0, 1, 0),
-							'fl':(1, 1, 0),
+		self.directions = {'l':(0, -1, 0),
+							'r':(0, 1, 0),
+							'f':(-1, 0, 0),
+							'fl':(-1, -1, 0),
 							'fr':(-1, 1, 0),
-							'b':(0, -1, 0),
+							'b':(1, 0, 0),
 							'bl':(1, -1, 0),
-							'br':(-1, -1, 0),
-							'u':(0, 0, 1),
-							'd':(0, 0, -1)}
+							'br':(1, 1, 0),
+							'u':(0, 0, -1),
+							'd':(0, 0, 1)}
 		
 	def speedset(self, val):
 		# speed val
 		self.speedval = val
 		
-		# speed from slider equals 1, 2 or 3. Use list for converting 
+		# value from slider equals 0, 1 or 2. Use list for converting 
 		# slider index to step motor speed
 		speeds = [50, 275, 500]
 		
@@ -69,7 +69,7 @@ class DaisyDriver(Serial):
 		count = 0
 		
 		# upper limit on jog repeats
-		while count < 5:
+		while count < 1000:
 			if (count == 0):
 				self.__jogdo(x, y, z)
 		

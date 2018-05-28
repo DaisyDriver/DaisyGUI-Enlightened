@@ -194,6 +194,12 @@ class CustomFileName(QWidget):
 		cfn_layout.addWidget(self.customswitch)
 		cfn_layout.addWidget(self.customname)
 		
+		# set margins
+		print(cfn_layout.contentsMargins().left())
+		print(cfn_layout.contentsMargins().top())
+		print(cfn_layout.contentsMargins().right())
+		print(cfn_layout.contentsMargins().bottom())
+		
 		# set layout to widget
 		self.setLayout(cfn_layout)
 		
@@ -331,6 +337,9 @@ class AdvancedSettingsWindow(QDialog):
 		fileset_layout.addRow(QLabel('Quality of compression (JPEG only)'), self.qualjpeg)
 		fileset_layout.addRow(QLabel('Use custom file name?'), self.custname)
 		fileset_layout.addRow(CancelButton(self), self.applybutton)
+		
+		# set spacing
+		fileset_layout.setSpacing(1)
 		
 		# set settings_layout as widget layout
 		self.setLayout(fileset_layout)

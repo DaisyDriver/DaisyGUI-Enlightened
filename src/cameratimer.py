@@ -57,18 +57,66 @@ class TakeWithGap(QWidget):
 		self.camera = camera
 		
 		# init UI
-		self.initUI
+		self.initUI()
 		
 	def initUI(self):
 		# set layout
 		sublayout_takewithgap = QHBoxLayout()
 		
 		# get widgets
+		self.takelabel = QLabel('take', self)
+		self.taketext = QLineEdit(self)
+		self.gaplabel = QLabel('pictures, with spacing of', self)
+		self.gaptext = QLineEdit(self)
+		self.gaplabel2 = QLabel('seconds.', self)
 		
-
+		# edit widgets appearances'
+		self.taketext.setFixedWidth(41)
+		self.gaptext.setFixedWidth(41)
 		
+		# add widgets to layout
+		sublayout_takewithgap.addWidget(self.takelabel)
+		sublayout_takewithgap.addWidget(self.taketext)
+		sublayout_takewithgap.addWidget(self.gaplabel)
+		sublayout_takewithgap.addWidget(self.gaptext)
+		sublayout_takewithgap.addWidget(self.gaplabel2)
 		
-
+		# set widget layout
+		self.setLayout(sublayout_takewithgap)
+		
+class TimerStart(QPushButton):
+	
+	def __init__(self, parent):
+		super(TimerStart, self).__init__(QIcon('resources/rocket.svg'), ' Start!', parent)
+		
+class StopReset(QPushButton):
+	
+	def __init__(self, parent):
+		super(StopReset, self).__init__(QIcon('resources/hand.svg'), ' Stop/Reset', parent)
+		
+class BottomButtons(QWidget):
+	
+	def __init__(self, parent, camera):
+		super(BottomButtons, self).__init__(parent)
+		
+		# init UI
+		self.initUI()
+		
+	def initUI(self):
+		# sublayout get
+		bottombuttons_sublayout = QHBoxLayout()
+		
+		# get widgets
+		self.sreset = StopReset(self)
+		self.tstart = TimerStart(self)
+		
+		# add widgets to sublayout
+		bottombuttons_sublayout.addWidget(self.sreset)
+		bottombuttons_sublayout.addWidget(self.tstart)
+		
+		# set sublayout
+		self.setLayout(bottombuttons_sublayout)
+		
 class CameraTimerSection(QGroupBox):
 	
 	def __init__(self, parent, camera):
@@ -89,12 +137,21 @@ class CameraTimerSection(QGroupBox):
 		
 		# initialise widgets
 		self.everyfor = EveryFor(self, self.camera)
+		self.takewith = TakeWithGap(self, self.camera)
+		self.BB = BottomButtons(self, self.camera)
 
 		# add widgets to vertical box layout
 		sublayout_cameratimer.addWidget(self.everyfor)
+		sublayout_cameratimer.addWidget(self.takewith)
+		sublayout_cameratimer.addWidget(self.BB)
+		
+		# set smaller spacing
+		sublayout_cameratimer.setSpacing(1)
 
 		# set sublayout as widget layout
 		self.setLayout(sublayout_cameratimer)
+		
+
 		
 		# set geometry
 		#~ self.setFixedSize(sublayout_fileman.sizeHint())
