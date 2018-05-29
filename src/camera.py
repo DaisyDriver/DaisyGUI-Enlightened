@@ -2,6 +2,7 @@ from datetime import datetime
 from picamera import PiCamera
 from pathlib import Path
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from threading import Thread, Lock
 
 class FileNameHelper():
 	
@@ -72,7 +73,10 @@ class Camera(PiCamera):
 		super(Camera, self).__init__()
 		
 		# set up camera hardware variables
-		self.camerasetup_DInit()
+		self.initvar_camerahardware()
+		
+		# set up timed thread variables (make each variable into list for multiple cameras)
+		self.initvar_cameratimer()
 		
 		# preview state sentinel
 		self.preview_state = False
@@ -80,7 +84,10 @@ class Camera(PiCamera):
 		# get filename object
 		self.fn = FileNameHelper()
 		
-	def camerasetup_DInit(self):
+		# lock to activate whilst still port in use
+		self.piclock = Lock()
+		
+	def initvar_camerahardware(self):
 		# set default resolution
 		self.resolution = (1640, 1232)
 		
@@ -94,10 +101,25 @@ class Camera(PiCamera):
 		# auto-white balance, starts auto
 		self.awb_mode = 'auto'
 		
+	def initvar_cameratimer(self):
+		#every n seconds
+		self.everyN = 0
+		
+		# for n seconds
+		self.forN = 0
+		
+		# take n pictures
+		self.takeN = 0
+		
+		# with spacing n
+		self.withgapN = 0
+		
 	def capture(self):
-		# format filename with date/time stamp values if appropriate
-		filename = self.fn.savedir + self.fn.filename_unformat.format(timestamp=datetime.now())
-		
-		# use parent method to capture, *bayer and quality only used for JPG formats*
-		super(Camera, self).capture(filename, format=self.fn.FileFormat, use_video_port=False, bayer=self.fn.bayerInclude, quality=self.fn.JPGquality)
-		
+		with self.piclock:
+			# format filename with date/time stamp values if appropriate
+			filename = self.fn.savedir + self.fn.filename_unformat.format(timestamp=datetime.now())
+			
+			# use parent method to capture, *bayer and quality only used for JPG formats*
+			super(Camera, self).capture(filename, format=self.fn.FileFormat, use_video_port=False, bayer=self.fn.bayerInclude, quality=self.fn.JPGquality)
+			
+	
