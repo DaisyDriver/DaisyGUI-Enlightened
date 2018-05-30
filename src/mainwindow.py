@@ -50,6 +50,7 @@ class MainWindow(QWidget):
 		# and display warning
 		if not self.DDconnected:
 			self.manualmovement.setEnabled(False)
+			# edited out while debugging, ADD IN for RELEASE!
 			#~ warning_dialog = QMessageBox.warning(self, 'DaisyDriver Warning', 
 									#~ 'Warning: No DaisyDriver Detected.', QMessageBox.Ok)
 			

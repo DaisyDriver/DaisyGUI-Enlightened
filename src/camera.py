@@ -3,6 +3,7 @@ from picamera import PiCamera
 from pathlib import Path
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from threading import Thread, Lock
+from src.cameratimerbackend import RepeatedTimer
 
 class FileNameHelper():
 	
@@ -103,38 +104,39 @@ class Camera(PiCamera):
 		
 	def initvar_cameratimer(self):
 		#every n seconds
-		self.everyN = None
+		self.everyN = 0
 		
 		# for n seconds
-		self.forN = None
+		self.forN = 0
 		
 		# take n pictures
-		self.takeN = None
+		self.takeN = 0
 		
 		# with spacing n
-		self.withgapN = None
+		self.withgapN = 0
 		
 	def capture(self):
 		with self.piclock:
 			# format filename with date/time stamp values if appropriate
 			filename = self.fn.savedir + self.fn.filename_unformat.format(timestamp=datetime.now())
-			print(filename)
+			#~ print(filename)
 			
 			# use parent method to capture, *bayer and quality only used for JPG formats*
-			#~ super(Camera, self).capture(filename, format=self.fn.FileFormat, use_video_port=False, bayer=self.fn.bayerInclude, quality=self.fn.JPGquality)
+			super(Camera, self).capture(filename, format=self.fn.FileFormat, use_video_port=False, bayer=self.fn.bayerInclude, quality=self.fn.JPGquality)
 			
-	def capture_timer(self):
+	def start_timed_capture(self):
 		# init camera capture (short time scale) timer
-		cameratimer = RepeatedTimer(self.withgapN, camera.capture, countlimit = self.takeN)
+		self.cameratimer = RepeatedTimer(self.withgapN, self.capture, countlimit = self.takeN)
 		# init longer time scale timer
-		self.maintimer = RepeatedTimer(self.everyN, cameratimer.start_all, timelimit = self.forN)
+		self.maintimer = RepeatedTimer(self.everyN, self.cameratimer.start_all, timelimit = self.forN)
 		# get thread and start
-		timedcapturethread = Thread(target = self.maintimer.start_all)
-		athread.start()
+		self.timedcapturethread = Thread(target = self.maintimer.start_all)
+		self.timedcapturethread.start()
 		
 	def stop_timed_capture(self):
 		# stop timed capture
 		self.maintimer.stop()
-		timedcapturethread.join()
-		print('thread done')
+		self.cameratimer.stop()
+		self.timedcapturethread.join()
+		print('Timer thread succesfully stopped.')
 		

@@ -4,6 +4,9 @@ from PyQt5.QtCore import pyqtSignal, pyqtSlot
 
 class EveryFor(QWidget):
 	
+	# for checking text fields are all non-zero 
+	onchangetext = pyqtSignal()
+	
 	def __init__(self, parent, camera):
 		super(EveryFor, self).__init__(parent)
 		
@@ -63,6 +66,9 @@ class EveryFor(QWidget):
 			
 			elif self.everybox.currentText() == 'minutes':
 				self.camera.everyN = number_in*60
+				
+		# emit on text change signal
+		self.onchangetext.emit()
 	
 	@pyqtSlot(str)
 	def everyNboxchange(self):
@@ -71,7 +77,7 @@ class EveryFor(QWidget):
 		
 	@pyqtSlot(str)
 	def update_forN(self, for_in):
-		#validate
+		# validate
 		valid, number_in = self.verify_input(for_in)
 		
 		# update if valid
@@ -83,6 +89,9 @@ class EveryFor(QWidget):
 			elif self.forbox.currentText() == 'hours':
 				# convert to seconds and set
 				self.camera.forN = number_in*60*60
+				
+		# emit on text change signal
+		self.onchangetext.emit()
 	
 	@pyqtSlot(str)
 	def forNboxchange(self):
@@ -131,6 +140,9 @@ class EveryFor(QWidget):
 		
 class TakeWithGap(QWidget):
 	
+	# for checking text fields are all non-zero 
+	onchangetext = pyqtSignal()
+	
 	def __init__(self, parent, camera):
 		super(TakeWithGap, self).__init__(parent)
 		
@@ -175,31 +187,29 @@ class TakeWithGap(QWidget):
 		
 		# update if valid
 		if valid:
-			self.camera.everyN = number_in
+			self.camera.takeN = number_in
+			
+		# emit on text change signal
+		self.onchangetext.emit()
 			
 	@pyqtSlot(str)
-	def update_forN(self, for_in):
+	def update_withgapN(self, gap_in):
 		#validate
-		valid, number_in = self.verify_input(for_in)
+		valid, number_in = self.verify_input(gap_in)
 		
 		# update if valid
 		if valid:
-			if self.forbox.currentText() == 'minutes':
-				# convert to seconds and set
-				self.camera.forN = number_in*60 
+			self.camera.withgapN = number_in
 			
-			elif self.forbox.currentText() == 'hours':
-				# convert to seconds and set
-				self.camera.forN = number_in*60*60
+		# emit on text change signal
+		self.onchangetext.emit()
 				
 	def signalslotconnector(self):
 		# connect take text box
-		#~ self.everytext.textEdited.connect(self.update_everyN)
-		#~ self.everybox.currentTextChanged.connect(self.everyNboxchange)
+		self.taketext.textEdited.connect(self.update_takeN)
 		
 		# connect with spacing text box
-		#~ self.fortext.textEdited.connect(self.update_forN)
-		#~ self.forbox.currentTextChanged.connect(self.forNboxchange)
+		self.gaptext.textEdited.connect(self.update_withgapN)
 		
 	def verify_input(self, text_in):
 		# check for validity of input
@@ -207,7 +217,7 @@ class TakeWithGap(QWidget):
 		
 		if not all([char in validchars for char in text_in]):
 			error_dialog = QMessageBox.critical(self, 'Incorrect number input', 
-												'Input number must be an integer between 1 and 1000 inclusive',
+												'Input number must be an integer greater than or equal to 1',
 												QMessageBox.Ok)
 			return (False, 0)
 			
@@ -219,14 +229,8 @@ class TakeWithGap(QWidget):
 		
 		if number_in<1:
 			error_dialog = QMessageBox.critical(self, 'Incorrect number input', 
-												'Input number must be an integer between 1 and 1000 inclusive',
+												'Input number must be an integer greater than or equal to 1',
 												QMessageBox.Ok)
-			return (False, 0)
-		
-		elif number_in>1000:
-			error_dialog = QMessageBox.critical(self, 'Incorrect number input', 
-									'Input number must be an integer between 1 and 1000 inclusive',
-									QMessageBox.Ok)
 			return (False, 0)
 			
 		else:
@@ -234,32 +238,104 @@ class TakeWithGap(QWidget):
 		
 class TimerStart(QPushButton):
 	
-	def __init__(self, parent):
+	enablestop = pyqtSignal()
+	
+	def __init__(self, parent, camera):
 		super(TimerStart, self).__init__(QIcon('resources/rocket.svg'), ' Start!', parent)
 		
-class StopReset(QPushButton):
-	
-	def __init__(self, parent):
-		super(StopReset, self).__init__(QIcon('resources/hand.svg'), ' Stop/Reset', parent)
+		# announce camera
+		self.camera = camera
 		
 		# set disabled initially
 		self.setEnabled(False)
+		
+		# connect clicked
+		self.clicked.connect(self.onclick)
+		
+	@pyqtSlot()
+	def ontextchange(self):
+		# check all values are non-zero and enable if so, disable if not
+		cameratimer_vars = [self.camera.everyN,
+							self.camera.forN,
+							self.camera.takeN,
+							self.camera.withgapN]
+							
+		if all(value != 0 for value in cameratimer_vars):
+			self.setEnabled(True)
+		else:
+			self.setEnabled(False)
+			
+	@pyqtSlot()
+	def onclick(self):
+		# check picture taking sequence is less time than gap between sequences
+		sequence_time = self.camera.takeN*self.camera.withgapN
+		if sequence_time < self.camera.everyN:
+			# disable start button and enable stop/reset button
+			self.setEnabled(False)
+			self.enablestop.emit()
+			
+			# start timed picture sequence!
+			self.camera.start_timed_capture()
+			
+		else:
+			error_dialog = QMessageBox.critical(self, 'Incorrect number input', 
+									'Picture taking sequence must take less time than gap between sequences',
+									QMessageBox.Ok)
+									
+	@pyqtSlot()
+	def onstop(self):
+		# on stop, re-enable start button
+		self.setEnabled(True)
+
+class StopReset(QPushButton):
+	
+	enablestart = pyqtSignal()
+	
+	def __init__(self, parent, camera):
+		super(StopReset, self).__init__(QIcon('resources/hand.svg'), ' Stop/Reset', parent)
+		
+		# announce camera
+		self.camera = camera
+		
+		# set disabled initially
+		self.setEnabled(False)
+		
+		# connect to onclicked
+		self.clicked.connect(self.onclicked)
+		
+	@pyqtSlot()
+	def onstart(self):
+		# once timer started, enable button
+		self.setEnabled(True)
+		
+	@pyqtSlot()
+	def onclicked(self):
+		# stop timer, disable stop button and re-enable start button
+		self.camera.stop_timed_capture()
+		self.setEnabled(False)
+		self.enablestart.emit()
 		
 class BottomButtons(QWidget):
 	
 	def __init__(self, parent, camera):
 		super(BottomButtons, self).__init__(parent)
 		
+		# announce camera
+		self.camera = camera
+		
 		# init UI
 		self.initUI()
+		
+		# connect signals and slots
+		self.signalslotconnector()
 		
 	def initUI(self):
 		# sublayout get
 		bottombuttons_sublayout = QHBoxLayout()
 		
 		# get widgets
-		self.sreset = StopReset(self)
-		self.tstart = TimerStart(self)
+		self.sreset = StopReset(self, self.camera)
+		self.tstart = TimerStart(self, self.camera)
 		
 		# add widgets to sublayout
 		bottombuttons_sublayout.addWidget(self.sreset)
@@ -267,6 +343,13 @@ class BottomButtons(QWidget):
 		
 		# set sublayout
 		self.setLayout(bottombuttons_sublayout)
+		
+	def signalslotconnector(self):
+		# connect start timer button to enable stop button
+		self.tstart.enablestop.connect(self.sreset.onstart)
+		# connect stop timer button to enable start button
+		self.sreset.enablestart.connect(self.tstart.onstop)
+
 		
 class CameraTimerSection(QGroupBox):
 	
@@ -278,6 +361,9 @@ class CameraTimerSection(QGroupBox):
 		
 		# init UI
 		self.initUI()
+		
+		# connect signals and slots
+		self.signalslotconnector()
 		
 	def initUI(self):
 		# general settings
@@ -304,5 +390,11 @@ class CameraTimerSection(QGroupBox):
 		
 		# set geometry
 		#~ self.setFixedSize(sublayout_fileman.sizeHint())
+		
+	def signalslotconnector(self):
+		# connect everyfor changetext signal to start button
+		self.everyfor.onchangetext.connect(self.BB.tstart.ontextchange)
+		# connect takewith changetext signal to start button
+		self.takewith.onchangetext.connect(self.BB.tstart.ontextchange)
 		
 
