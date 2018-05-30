@@ -12,7 +12,7 @@ class PreviewWindow(QLabel):
 		super(PreviewWindow, self).__init__(parent)
 		
 		# set preview window geometry
-		self.resize(640,480)
+		self.setFixedSize(640,480)
 		
 		# announce camera object
 		self.camera = camera

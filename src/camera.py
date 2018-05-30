@@ -103,23 +103,38 @@ class Camera(PiCamera):
 		
 	def initvar_cameratimer(self):
 		#every n seconds
-		self.everyN = 0
+		self.everyN = None
 		
 		# for n seconds
-		self.forN = 0
+		self.forN = None
 		
 		# take n pictures
-		self.takeN = 0
+		self.takeN = None
 		
 		# with spacing n
-		self.withgapN = 0
+		self.withgapN = None
 		
 	def capture(self):
 		with self.piclock:
 			# format filename with date/time stamp values if appropriate
 			filename = self.fn.savedir + self.fn.filename_unformat.format(timestamp=datetime.now())
+			print(filename)
 			
 			# use parent method to capture, *bayer and quality only used for JPG formats*
-			super(Camera, self).capture(filename, format=self.fn.FileFormat, use_video_port=False, bayer=self.fn.bayerInclude, quality=self.fn.JPGquality)
+			#~ super(Camera, self).capture(filename, format=self.fn.FileFormat, use_video_port=False, bayer=self.fn.bayerInclude, quality=self.fn.JPGquality)
 			
-	
+	def capture_timer(self):
+		# init camera capture (short time scale) timer
+		cameratimer = RepeatedTimer(self.withgapN, camera.capture, countlimit = self.takeN)
+		# init longer time scale timer
+		self.maintimer = RepeatedTimer(self.everyN, cameratimer.start_all, timelimit = self.forN)
+		# get thread and start
+		timedcapturethread = Thread(target = self.maintimer.start_all)
+		athread.start()
+		
+	def stop_timed_capture(self):
+		# stop timed capture
+		self.maintimer.stop()
+		timedcapturethread.join()
+		print('thread done')
+		

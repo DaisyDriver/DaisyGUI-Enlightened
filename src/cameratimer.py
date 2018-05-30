@@ -50,7 +50,7 @@ class EveryFor(QWidget):
 		# set sublayout to widget
 		self.setLayout(sublayout_everyfor)
 		
-	#~ def 
+	#~ def update_every
 		
 class TakeWithGap(QWidget):
 	
