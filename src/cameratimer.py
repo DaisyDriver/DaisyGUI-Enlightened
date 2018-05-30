@@ -191,6 +191,12 @@ class TakeWithGap(QWidget):
 			
 		# emit on text change signal
 		self.onchangetext.emit()
+		
+		# special case for only taking 1 picture (no gap)
+		if number_in == 1:
+			self.gaptext.setEnabled(False)
+		else:
+			self.gaptext.setEnabled(True)
 			
 	@pyqtSlot(str)
 	def update_withgapN(self, gap_in):
@@ -203,7 +209,7 @@ class TakeWithGap(QWidget):
 			
 		# emit on text change signal
 		self.onchangetext.emit()
-				
+		
 	def signalslotconnector(self):
 		# connect take text box
 		self.taketext.textEdited.connect(self.update_takeN)
@@ -259,8 +265,12 @@ class TimerStart(QPushButton):
 							self.camera.forN,
 							self.camera.takeN,
 							self.camera.withgapN]
-							
+		
+		# general case
 		if all(value != 0 for value in cameratimer_vars):
+			self.setEnabled(True)
+		# special case of only taking 1 picture (gap irrelevant)
+		elif self.camera.takeN == 1 and self.camera.everyN != 0 and self.camera.forN != 0:
 			self.setEnabled(True)
 		else:
 			self.setEnabled(False)
@@ -269,7 +279,7 @@ class TimerStart(QPushButton):
 	def onclick(self):
 		# check picture taking sequence is less time than gap between sequences
 		sequence_time = self.camera.takeN*self.camera.withgapN
-		if sequence_time < self.camera.everyN:
+		if sequence_time < self.camera.everyN or self.camera.takeN == 1:
 			# disable start button and enable stop/reset button
 			self.setEnabled(False)
 			self.enablestop.emit()
@@ -312,6 +322,11 @@ class StopReset(QPushButton):
 	def onclicked(self):
 		# stop timer, disable stop button and re-enable start button
 		self.camera.stop_timed_capture()
+		self.setEnabled(False)
+		self.enablestart.emit()
+		
+	@pyqtSlot()
+	def onfinish(self):
 		self.setEnabled(False)
 		self.enablestart.emit()
 		

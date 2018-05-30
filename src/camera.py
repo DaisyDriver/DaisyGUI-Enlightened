@@ -1,8 +1,8 @@
 from datetime import datetime
 from picamera import PiCamera
 from pathlib import Path
-from PyQt5.QtCore import pyqtSignal, pyqtSlot
-from threading import Thread, Lock
+from PyQt5.QtCore import pyqtSignal, QObject
+from threading import Lock, Thread
 from src.cameratimerbackend import RepeatedTimer
 
 class FileNameHelper():
@@ -67,6 +67,14 @@ class FileNameHelper():
 		# update time stamp status and name accordingly
 		self.TimeStamp = TimeBool_in
 		self.filenamehelper(self.NamePrefix, self.DateStamp, self.TimeStamp, self.FileFormat)
+		
+class CallBackEmitter(QObject):
+	
+	# timer finished signal
+	timer_finished_signal = pyqtSignal()
+	
+	def __init__(self):
+		super(CallBackEmitter, self).__init__()
 
 class Camera(PiCamera):
 	
@@ -87,6 +95,9 @@ class Camera(PiCamera):
 		
 		# lock to activate whilst still port in use
 		self.piclock = Lock()
+		
+		# get callback emitter instance
+		self.callbackemitter = CallBackEmitter()
 		
 	def initvar_camerahardware(self):
 		# set default resolution
@@ -119,24 +130,38 @@ class Camera(PiCamera):
 		with self.piclock:
 			# format filename with date/time stamp values if appropriate
 			filename = self.fn.savedir + self.fn.filename_unformat.format(timestamp=datetime.now())
-			#~ print(filename)
 			
 			# use parent method to capture, *bayer and quality only used for JPG formats*
 			super(Camera, self).capture(filename, format=self.fn.FileFormat, use_video_port=False, bayer=self.fn.bayerInclude, quality=self.fn.JPGquality)
 			
 	def start_timed_capture(self):
-		# init camera capture (short time scale) timer
-		self.cameratimer = RepeatedTimer(self.withgapN, self.capture, countlimit = self.takeN)
-		# init longer time scale timer
-		self.maintimer = RepeatedTimer(self.everyN, self.cameratimer.start_all, timelimit = self.forN)
+		# special case for only 1 picture
+		if self.takeN == 1:
+			# init main time
+			self.maintimer = RepeatedTimer(self.everyN, self.capture, timelimit = self.forN, callback = self.callbackemitter.timer_finished_signal.emit)
+			
+		else:
+			# init camera capture (short time scale) timer
+			self.cameratimer = RepeatedTimer(self.withgapN, self.capture, countlimit = self.takeN)
+			# init longer time scale timer
+			self.maintimer = RepeatedTimer(self.everyN, self.cameratimer.start_all, timelimit = self.forN, callback = self.callbackemitter.timer_finished_signal.emit)
+		
 		# get thread and start
 		self.timedcapturethread = Thread(target = self.maintimer.start_all)
 		self.timedcapturethread.start()
 		
 	def stop_timed_capture(self):
-		# stop timed capture
-		self.maintimer.stop()
-		self.cameratimer.stop()
+		# stop timed capture, timer may not be running so have to try/except
+		try:
+			self.maintimer.stop()
+		except AttributeError:
+			pass
+			
+		try:
+			self.cameratimer.stop()
+		except AttributeError:
+			pass
+			
 		self.timedcapturethread.join()
 		print('Timer thread succesfully stopped.')
 		

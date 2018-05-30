@@ -26,6 +26,9 @@ class MainWindow(QWidget):
 			
 		# initialise user interface
 		self.initUI()
+		
+		# connect camera finishing timer signal to UI to re-enable start button
+		self.camera.callbackemitter.timer_finished_signal.connect(self.cameratimer.BB.sreset.onfinish)
 	
 	def initUI(self):
 		# general settings
@@ -50,9 +53,8 @@ class MainWindow(QWidget):
 		# and display warning
 		if not self.DDconnected:
 			self.manualmovement.setEnabled(False)
-			# edited out while debugging, ADD IN for RELEASE!
-			#~ warning_dialog = QMessageBox.warning(self, 'DaisyDriver Warning', 
-									#~ 'Warning: No DaisyDriver Detected.', QMessageBox.Ok)
+			warning_dialog = QMessageBox.warning(self, 'DaisyDriver Warning', 
+									'Warning: No DaisyDriver Detected.', QMessageBox.Ok)
 			
 		# set mainlayout as widget layout
 		self.setLayout(mainlayout)
@@ -62,14 +64,39 @@ class MainWindow(QWidget):
 		self.move(75, 75)
 		
 	def closeEvent(self, event):
-		# ensure preview thread ends
-		self.camera.preview_state = False
-		# ensure close daisy driver serial object (if open)
+		# check if timer is running, show warning box if so
 		try:
-			self.DD.close()
+			if self.camera.maintimer._timer.isAlive():
+				exit_question = QMessageBox.question(self, 'Camera Timer Warning', 
+									'Camera timer still running, are you sure you want to exit?', 
+									QMessageBox.Cancel | QMessageBox.Yes, QMessageBox.Yes)
+					
+				if exit_question == QMessageBox.Yes:
+					self.camera.stop_timed_capture()
+					# ensure preview thread ends
+					self.camera.preview_state = False
+					# ensure close daisy driver serial object (if open)
+					try:
+						self.DD.close()
+					except AttributeError:
+						pass
+						
+					event.accept()
+				elif exit_question == QMessageBox.Cancel:
+					event.ignore()
+					
+		# in case no timer thread has been created (start button never pressed) 
 		except AttributeError:
+			# ensure preview thread ends
+			self.camera.preview_state = False
+			# ensure close daisy driver serial object (if open)
+			try:
+				self.DD.close()
+			except AttributeError:
+				pass
+				
 			pass
-
+			
 def run():
 	
     app = QApplication(sys.argv)
