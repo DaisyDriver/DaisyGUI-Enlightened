@@ -98,6 +98,9 @@ class StopReset(QPushButton):
 	def __init__(self, parent):
 		super(StopReset, self).__init__(QIcon('resources/hand.svg'), ' Stop/Reset', parent)
 		
+		# set disabled initially
+		self.setEnabled(False)
+		
 class BottomButtons(QWidget):
 	
 	def __init__(self, parent, camera):
@@ -154,8 +157,6 @@ class CameraTimerSection(QGroupBox):
 
 		# set sublayout as widget layout
 		self.setLayout(sublayout_cameratimer)
-		
-
 		
 		# set geometry
 		#~ self.setFixedSize(sublayout_fileman.sizeHint())

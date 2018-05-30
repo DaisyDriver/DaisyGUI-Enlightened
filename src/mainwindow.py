@@ -1,11 +1,12 @@
 import sys
-from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication
+from PyQt5.QtWidgets import QWidget, QGridLayout, QApplication, QMessageBox
 from src.camerasection import CameraSection
 from src.camera import Camera
 from src.manualmovement import ManualMovementSection
 from src.filemanagement import FileManagementSection
 from src.motorbackend import DaisyDriver
 from src.cameratimer import CameraTimerSection
+from serial.serialutil import SerialException
 
 class MainWindow(QWidget):
 	
@@ -15,9 +16,14 @@ class MainWindow(QWidget):
 		# get customised PiCamera instance
 		self.camera = Camera()
 		
-		# get daisy driver object
-		self.DD = DaisyDriver()
-		
+		# get daisy driver object, disable manual movement section if not available
+		try: 
+			self.DD = DaisyDriver()
+			self.DDconnected = True
+		except SerialException:
+			self.DDconnected = False
+			self.DD = DaisyDriver(connected=False)
+			
 		# initialise user interface
 		self.initUI()
 	
@@ -39,7 +45,14 @@ class MainWindow(QWidget):
 		mainlayout.addWidget(self.filemanagement, 0, 1, 1, 1)
 		mainlayout.addWidget(self.manualmovement, 1, 1, 1, 1)
 		mainlayout.addWidget(self.cameratimer, 2, 1, 1, 1)
-
+		
+		# check if DD plugged in, disable manual movement section if so
+		# and display warning
+		if not self.DDconnected:
+			self.manualmovement.setEnabled(False)
+			#~ warning_dialog = QMessageBox.warning(self, 'DaisyDriver Warning', 
+									#~ 'Warning: No DaisyDriver Detected.', QMessageBox.Ok)
+			
 		# set mainlayout as widget layout
 		self.setLayout(mainlayout)
 		
@@ -50,8 +63,11 @@ class MainWindow(QWidget):
 	def closeEvent(self, event):
 		# ensure preview thread ends
 		self.camera.preview_state = False
-		# ensure close daisy driver serial object
-		self.DD.close()
+		# ensure close daisy driver serial object (if open)
+		try:
+			self.DD.close()
+		except AttributeError:
+			pass
 
 def run():
 	

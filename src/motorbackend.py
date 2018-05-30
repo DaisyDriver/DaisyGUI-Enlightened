@@ -3,27 +3,33 @@ from threading import Thread, Lock
 
 class DaisyDriver(Serial):
 	
-	def __init__(self):
-		# initialise DaisyDriver serial object (hard code serial address for now)
-		super(DaisyDriver, self).__init__('/dev/ttyACM0')
-		
-		# set initial speed (0,1,2 for low,medium,high respectively)
-		self.speedset(2)
-		
-		# initialise jog lock
-		self.joglock = Lock()
-		
-		# initialise direction dictionary, f = forward, fl = forward left etc...
-		self.directions = {'l':(0, -1, 0),
-							'r':(0, 1, 0),
-							'f':(-1, 0, 0),
-							'fl':(-1, -1, 0),
-							'fr':(-1, 1, 0),
-							'b':(1, 0, 0),
-							'bl':(1, -1, 0),
-							'br':(1, 1, 0),
-							'u':(0, 0, -1),
-							'd':(0, 0, 1)}
+	def __init__(self, connected = True):
+		# check for connection bool to allow for dummy DaisyDriver object
+		# if not connected
+		if connected:
+			# initialise DaisyDriver serial object (hard code serial address for now)
+			super(DaisyDriver, self).__init__('/dev/ttyACM0')
+			
+			# set initial speed (0,1,2 for low,medium,high respectively)
+			self.speedset(2)
+			
+			# initialise jog lock
+			self.joglock = Lock()
+			
+			# initialise direction dictionary, f = forward, fl = forward left etc...
+			self.directions = {'l':(0, -1, 0),
+								'r':(0, 1, 0),
+								'f':(-1, 0, 0),
+								'fl':(-1, -1, 0),
+								'fr':(-1, 1, 0),
+								'b':(1, 0, 0),
+								'bl':(1, -1, 0),
+								'br':(1, 1, 0),
+								'u':(0, 0, -1),
+								'd':(0, 0, 1)}
+		elif not connected:
+			# just set default speedval for slider to read
+			self.speedval = 2						
 		
 	def speedset(self, val):
 		# speed val
