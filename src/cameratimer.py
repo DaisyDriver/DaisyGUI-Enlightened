@@ -14,6 +14,7 @@ class EveryFor(QWidget):
 		self.initUI()
 		
 		# connect signals to slots
+		self.signalslotconnector()
 		
 	def initUI(self):
 		# set layout
@@ -50,7 +51,83 @@ class EveryFor(QWidget):
 		# set sublayout to widget
 		self.setLayout(sublayout_everyfor)
 		
-	#~ def update_every
+	@pyqtSlot(str)
+	def update_everyN(self, every_in):
+		#validate
+		valid, number_in = self.verify_input(every_in)
+		
+		# update if valid
+		if valid:
+			if self.everybox.currentText() == 'seconds':
+				self.camera.everyN = number_in
+			
+			elif self.everybox.currentText() == 'minutes':
+				self.camera.everyN = number_in*60
+	
+	@pyqtSlot(str)
+	def everyNboxchange(self):
+		# get text box value and call updater function
+		self.update_everyN(self.everytext.text())
+		
+	@pyqtSlot(str)
+	def update_forN(self, for_in):
+		#validate
+		valid, number_in = self.verify_input(for_in)
+		
+		# update if valid
+		if valid:
+			if self.forbox.currentText() == 'minutes':
+				# convert to seconds and set
+				self.camera.forN = number_in*60 
+			
+			elif self.forbox.currentText() == 'hours':
+				# convert to seconds and set
+				self.camera.forN = number_in*60*60
+	
+	@pyqtSlot(str)
+	def forNboxchange(self):
+		# get text box value and call updater function
+		self.update_forN(self.fortext.text())		
+
+	def signalslotconnector(self):
+		# connect every text box and combo box
+		self.everytext.textEdited.connect(self.update_everyN)
+		self.everybox.currentTextChanged.connect(self.everyNboxchange)
+		
+		# connect for text box and combo box
+		self.fortext.textEdited.connect(self.update_forN)
+		self.forbox.currentTextChanged.connect(self.forNboxchange)
+		
+	def verify_input(self, text_in):
+		# check for validity of input
+		validchars = '0123456789'
+		
+		if not all([char in validchars for char in text_in]):
+			error_dialog = QMessageBox.critical(self, 'Incorrect number input', 
+												'Input number must be an integer between 1 and 1000 inclusive',
+												QMessageBox.Ok)
+			return (False, 0)
+			
+		elif len(text_in)==0:
+			
+			return (True, 0)
+		
+		number_in = int(text_in)
+		
+		if number_in<1:
+			error_dialog = QMessageBox.critical(self, 'Incorrect number input', 
+												'Input number must be an integer between 1 and 1000 inclusive',
+												QMessageBox.Ok)
+			return (False, 0)
+		
+		elif number_in>1000:
+			error_dialog = QMessageBox.critical(self, 'Incorrect number input', 
+									'Input number must be an integer between 1 and 1000 inclusive',
+									QMessageBox.Ok)
+			return (False, 0)
+			
+		else:
+			return (True, number_in)
 		
 class TakeWithGap(QWidget):
 	
@@ -62,6 +139,9 @@ class TakeWithGap(QWidget):
 		
 		# init UI
 		self.initUI()
+		
+		# connect signals and slots
+		self.signalslotconnector()
 		
 	def initUI(self):
 		# set layout
@@ -87,6 +167,70 @@ class TakeWithGap(QWidget):
 		
 		# set widget layout
 		self.setLayout(sublayout_takewithgap)
+		
+	@pyqtSlot(str)
+	def update_takeN(self, take_in):
+		#validate
+		valid, number_in = self.verify_input(take_in)
+		
+		# update if valid
+		if valid:
+			self.camera.everyN = number_in
+			
+	@pyqtSlot(str)
+	def update_forN(self, for_in):
+		#validate
+		valid, number_in = self.verify_input(for_in)
+		
+		# update if valid
+		if valid:
+			if self.forbox.currentText() == 'minutes':
+				# convert to seconds and set
+				self.camera.forN = number_in*60 
+			
+			elif self.forbox.currentText() == 'hours':
+				# convert to seconds and set
+				self.camera.forN = number_in*60*60
+				
+	def signalslotconnector(self):
+		# connect take text box
+		#~ self.everytext.textEdited.connect(self.update_everyN)
+		#~ self.everybox.currentTextChanged.connect(self.everyNboxchange)
+		
+		# connect with spacing text box
+		#~ self.fortext.textEdited.connect(self.update_forN)
+		#~ self.forbox.currentTextChanged.connect(self.forNboxchange)
+		
+	def verify_input(self, text_in):
+		# check for validity of input
+		validchars = '0123456789'
+		
+		if not all([char in validchars for char in text_in]):
+			error_dialog = QMessageBox.critical(self, 'Incorrect number input', 
+												'Input number must be an integer between 1 and 1000 inclusive',
+												QMessageBox.Ok)
+			return (False, 0)
+			
+		elif len(text_in)==0:
+			
+			return (True, 0)
+		
+		number_in = int(text_in)
+		
+		if number_in<1:
+			error_dialog = QMessageBox.critical(self, 'Incorrect number input', 
+												'Input number must be an integer between 1 and 1000 inclusive',
+												QMessageBox.Ok)
+			return (False, 0)
+		
+		elif number_in>1000:
+			error_dialog = QMessageBox.critical(self, 'Incorrect number input', 
+									'Input number must be an integer between 1 and 1000 inclusive',
+									QMessageBox.Ok)
+			return (False, 0)
+			
+		else:
+			return (True, number_in)
 		
 class TimerStart(QPushButton):
 	
