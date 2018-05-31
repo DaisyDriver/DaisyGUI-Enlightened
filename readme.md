@@ -10,8 +10,8 @@ Current version: 1.0
 + Add support for multiple cameras
 + Refactor code for clarity and readability
 + Test time for longer periods (weeks)
-+ Write camera test on load up which uses raspistill to take (and then delete a test picture)
++ Write camera test on load up which uses raspistill to take (and then deletes) a test picture
 + Investigate use of video port for long sequences of shorter gap image captures
 
 ### Contributions
-Please feel free to open an issue or send a pull request.
+Feel free to open an issue or send a pull request.
