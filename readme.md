@@ -6,9 +6,9 @@ Current version: 1.03
 *Documentation in progress.* Camera timer appears to be working well but the camera itself struggles with smaller intervals between pictures (approx. 1/2 seconds) for a long period of time (approx. 30 seconds). Taking less pictures at this short interval, or using a longer interval are two possible ways of overcoming this issue.
 
 ### Requirements
-Raspberry Pi 3B or 3B+ with the latest version of Raspbian Stretch installed
-PiCamera v2
-DaisyDriver
++ Raspberry Pi 3B or 3B+ with the latest version of Raspbian Stretch installed
++ PiCamera v2
++ DaisyDriver
 
 ### Installation
 1. Open terminal window and navigate to the directory you want to install DaisyGUI
