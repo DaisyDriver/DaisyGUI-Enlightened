@@ -29,6 +29,7 @@ Current version: 1.03
 + Test time for longer periods (weeks)
 + Write camera test on load up which uses raspistill to take (and then deletes) a test picture
 + Investigate use of video port for long sequences of shorter gap image captures
++ Investigate a more robust way of determining serial port (currently just hard-coded)
 
 #### Contributions
 Feel free to open an issue or send a pull request.
