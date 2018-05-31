@@ -1,7 +1,7 @@
 # **DaisyGUI**
 ### A graphical user interface to the DaisyDriver open-hardware microscope controller.
 
-Current version: 1.0
+Current version: 1.02
 
 *Documentation in progress.* Camera timer appears to be working well but the camera itself struggles with smaller intervals between pictures (approx. 1/2 seconds) for a long period of time (approx. 30 seconds). Taking less pictures at this short interval, or using a longer interval are two possible ways of overcoming this issue.
 
