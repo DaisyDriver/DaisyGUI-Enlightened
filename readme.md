@@ -23,6 +23,7 @@ Current version: 1.03
 6. When opening DaisyGUI subsequently, you will need to navigate to this directory again and run the command in step 5.
 
 #### To do
++ Add capability to split jpg and raw Bayer data immediately after capture
 + Improve error handling
 + Add support for multiple cameras
 + Refactor code for clarity and readability
