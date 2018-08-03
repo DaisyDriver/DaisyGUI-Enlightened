@@ -13,9 +13,6 @@ class MainWindow(QWidget):
 	def __init__(self):
 		super().__init__()
 		
-		# get customised PiCamera instance
-		self.camera = Camera()
-		
 		# get daisy driver object, disable manual movement section if not available
 		try: 
 			self.DD = DaisyDriver()
@@ -23,6 +20,9 @@ class MainWindow(QWidget):
 		except SerialException:
 			self.DDconnected = False
 			self.DD = DaisyDriver(connected=False)
+			
+		# get customised PiCamera instance
+		self.camera = Camera(self.DD)
 			
 		# initialise user interface
 		self.initUI()

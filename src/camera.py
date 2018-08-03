@@ -4,8 +4,7 @@ from pathlib import Path
 from PyQt5.QtCore import pyqtSignal, QObject
 from threading import Lock, Thread
 from src.cameratimerbackend import RepeatedTimer
-
-from time import sleep
+from time import sleep, time
 
 class FileNameHelper():
 	
@@ -80,8 +79,12 @@ class CallBackEmitter(QObject):
 
 class Camera(PiCamera):
 	
-	def __init__(self):
+	def __init__(self, daisydriver):
 		super(Camera, self).__init__()
+		
+		# announce daisydriver handle and light thread ID count
+		self.DD = daisydriver
+		self.lightID = 0
 		
 		# set up camera hardware variables
 		self.initvar_camerahardware()
@@ -133,22 +136,58 @@ class Camera(PiCamera):
 			# format filename with date/time stamp values if appropriate
 			filename = self.fn.savedir + self.fn.filename_unformat.format(timestamp=datetime.now())
 			
+			print("taken picture at:", time()) 
+			
 			# use parent method to capture, *bayer and quality only used for JPG formats*
 			super(Camera, self).capture(filename, format=self.fn.FileFormat, use_video_port=False, bayer=self.fn.bayerInclude, quality=self.fn.JPGquality)
+			
+	def light_sequence(self):
+		# get unique light ID for this thread instance
+		self.lightID+=1
+		
+		ID = self.lightID
+		
+		self.DD.light_on()
+		print("light on at:", time()) 
+		
+		sleep(7)
+		
+		# check if another thread started. If not, switch off light
+		if ID == self.lightID:
+			self.DD.light_off()
+			print("light off at:", time()) 
 			
 	def start_timed_capture(self):
 		# special case for only 1 picture
 		if self.takeN == 1:
 			# init main time
 			self.maintimer = RepeatedTimer(self.everyN, self.capture, timelimit = self.forN, callback = self.callbackemitter.timer_finished_signal.emit)
+
+			self.maintimer_light = RepeatedTimer(self.everyN, self.light_sequence, timelimit = self.forN)
 			
 		else:
 			# init camera capture (short time scale) timer
 			self.cameratimer = RepeatedTimer(self.withgapN, self.capture, countlimit = self.takeN)
+			
+			self.cameratimer_light = RepeatedTimer(self.withgapN, self.light_sequence, countlimit = self.takeN)
+			
 			# init longer time scale timer
 			self.maintimer = RepeatedTimer(self.everyN, self.cameratimer.start_all, timelimit = self.forN, callback = self.callbackemitter.timer_finished_signal.emit)
+
+			self.maintimer_light = RepeatedTimer(self.everyN, self.cameratimer_light.start_all, timelimit = self.forN)
+			
+		start_bang = Thread(target = self.start_timed_capture_bang)
+		start_bang.start()	
+	
+	def start_timed_capture_bang(self):
+		# get light thread and start
+		self.timedlightthread = Thread(target = self.maintimer_light.start_all)
+		self.timedlightthread.start()
 		
-		# get thread and start
+		# wait for camera to adust to light before taking each picture
+		sleep(5)
+		
+		# get camera thread and start
 		self.timedcapturethread = Thread(target = self.maintimer.start_all)
 		self.timedcapturethread.start()
 		
@@ -164,6 +203,16 @@ class Camera(PiCamera):
 		except AttributeError:
 			pass
 			
+		# stop timed light
+		try:
+			self.maintimer_light.stop()
+		except AttributeError:
+			pass
+			
+		try:
+			self.cameratimer_light.stop()
+		except AttributeError:
+			pass			
+			
 		self.timedcapturethread.join()
-		print('Timer thread succesfully stopped.')
-		print(self.timedcapturethread.isAlive())
+		#~ print('Timer thread succesfully stopped.')
