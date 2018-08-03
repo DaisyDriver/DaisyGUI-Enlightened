@@ -74,12 +74,18 @@ class PreviewButton(QPushButton):
 	sig_start_thread = pyqtSignal()
 	sig_stop_thread = pyqtSignal()
 	
-	def __init__(self, parent):
+	def __init__(self, parent, camera, daisydriver):
 		super(PreviewButton, self).__init__(QIcon('resources/play.svg'), '  Start Preview Feed', parent)
 		
 		# announce parent to class and set initial button function to start preview
 		self.parent = parent
 		self.clicked.connect(self.start_preview)
+		
+		# announce daisydriver handle
+		self.DD = daisydriver
+		
+		# announce camera handle
+		self.camera = camera
 		
 	def start_preview(self):
 		# start preview thread
@@ -91,6 +97,14 @@ class PreviewButton(QPushButton):
 		self.clicked.connect(self.stop_preview)
 		self.setIcon(QIcon('resources/square.svg'))
 		
+		# turn light on if timed camera thread not running
+		try:
+			if not self.camera.maintimer.is_active: 
+				self.DD.light_on()
+				
+		except AttributeError:
+			self.DD.light_on()
+		
 	def stop_preview(self):
 		# stop preview thread
 		self.sig_stop_thread.emit()
@@ -100,6 +114,14 @@ class PreviewButton(QPushButton):
 		self.setText('  Start Preview Feed')
 		self.clicked.connect(self.start_preview)
 		self.setIcon(QIcon('resources/play.svg'))
+		
+		# turn light off if timed camera thread not running
+		try:
+			if not self.camera.maintimer.is_active: 
+				self.DD.light_off()
+				
+		except AttributeError:
+			self.DD.light_off()
 		
 class SnapshotButton(QPushButton):
 	
@@ -111,7 +133,7 @@ class SnapshotButton(QPushButton):
 		
 class CameraSection(QGroupBox):
 	
-	def __init__(self, parent, camera):
+	def __init__(self, parent, camera, daisydriver):
 		super(CameraSection, self).__init__(parent)
 		
 		# announce parent (main window)
@@ -119,6 +141,9 @@ class CameraSection(QGroupBox):
 		
 		# get customised PiCamera instance
 		self.camera = camera
+		
+		# announce daisydriver handle
+		self.DD = daisydriver
 		
 		# initialise user interface
 		self.initUI()
@@ -132,7 +157,7 @@ class CameraSection(QGroupBox):
 		
 		# initialise widgets
 		self.previewwindow = PreviewWindow(self.main_window, self.camera)
-		self.previewbutton = PreviewButton(self.main_window)
+		self.previewbutton = PreviewButton(self.main_window, self.camera, self.DD)
 		self.snapshotbutton = SnapshotButton(self.main_window, self.camera)
 		self.settingsbutton = CameraSettingsButton(self.main_window, self.camera)
 		#~ self.cameraselection = QComboBox(self)

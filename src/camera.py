@@ -5,6 +5,8 @@ from PyQt5.QtCore import pyqtSignal, QObject
 from threading import Lock, Thread
 from src.cameratimerbackend import RepeatedTimer
 
+from time import sleep
+
 class FileNameHelper():
 	
 	def __init__(self):
@@ -164,4 +166,4 @@ class Camera(PiCamera):
 			
 		self.timedcapturethread.join()
 		print('Timer thread succesfully stopped.')
-		
+		print(self.timedcapturethread.isAlive())

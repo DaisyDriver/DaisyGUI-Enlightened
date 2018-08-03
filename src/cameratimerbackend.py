@@ -58,6 +58,9 @@ class RepeatedTimer():
 			self.stop()
 			
 	def start_all(self):
+		
+		# set state as running
+		self.is_active = 1
 	
 		# get starting time for time limit
 		self.time_init = time()
@@ -79,3 +82,6 @@ class RepeatedTimer():
 		
 		if self.callback is not None:
 			self.callback()
+			
+		# set state as not running
+		self.is_active = 0

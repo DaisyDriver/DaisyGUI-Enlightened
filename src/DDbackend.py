@@ -27,9 +27,13 @@ class DaisyDriver(Serial):
 								'br':(1, 1, 0),
 								'u':(0, 0, -1),
 								'd':(0, 0, 1)}
+								
 		elif not connected:
 			# just set default speedval for slider to read
-			self.speedval = 2						
+			self.speedval = 2
+			
+		# state value of light, starts off
+		self.lightval = 0					
 		
 	def speedset(self, val):
 		# speed val
@@ -67,7 +71,7 @@ class DaisyDriver(Serial):
 			# write command
 			self.write(bytes_command)
 			
-			# read finish statement and print
+			# read finish statement
 			self.readline()
 			
 	def __jog(self, x, y, z, button_handle):
@@ -92,5 +96,36 @@ class DaisyDriver(Serial):
 			# start jog
 			jogthread = Thread(target=self.__jog, args=(*dir_tuple, button_handle))
 			jogthread.start()
+			
+	def light_on(self):
+		# switch light on, if not on already
+		if self.lightval==0:
+			# serial command
+			bytes_command = b'LON \r'
+			
+			# write command
+			self.write(bytes_command)
+			
+			# set light state as on
+			self.lightval = 1
+			
+			# flush buffer
+			self.flush()
+			
+	def light_off(self):
+		# switch light off, if not off already
+		if self.lightval==1:
+			# serial command
+			bytes_command = b'LOF \r'
+			
+			# write command
+			self.write(bytes_command)
+			
+			# set light state as off
+			self.lightval = 0
+			
+			# flush buffer
+			self.flush()
+			
 		
 

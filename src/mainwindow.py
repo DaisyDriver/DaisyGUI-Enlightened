@@ -4,7 +4,7 @@ from src.camerasection import CameraSection
 from src.camera import Camera
 from src.manualmovement import ManualMovementSection
 from src.filemanagement import FileManagementSection
-from src.motorbackend import DaisyDriver
+from src.DDbackend import DaisyDriver
 from src.cameratimer import CameraTimerSection
 from serial.serialutil import SerialException
 
@@ -32,13 +32,13 @@ class MainWindow(QWidget):
 	
 	def initUI(self):
 		# general settings
-		self.setWindowTitle('DaisyGUI v1.03')
+		self.setWindowTitle('DaisyGUI-Enlightened v1.0')
 		
 		# main layout
 		mainlayout = QGridLayout()
 		
 		# get widgets
-		self.camerasection = CameraSection(self, self.camera)
+		self.camerasection = CameraSection(self, self.camera, self.DD)
 		self.filemanagement = FileManagementSection(self, self.camera)
 		self.manualmovement = ManualMovementSection(self, self.camera, self.DD)
 		self.cameratimer = CameraTimerSection(self, self.camera)
