@@ -32,8 +32,9 @@ class DaisyDriver(Serial):
 			# just set default speedval for slider to read
 			self.speedval = 2
 			
-		# state value of light, starts off
-		self.lightval = 0					
+		# state value of light, assumes on then switches off
+		self.lightval = 1
+		self.light_off()					
 		
 	def speedset(self, val):
 		# speed val
