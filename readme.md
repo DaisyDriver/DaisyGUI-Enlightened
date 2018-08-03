@@ -1,11 +1,12 @@
-# **DaisyGUI**
+# **DaisyGUI-Enlightened**
 ### A graphical user interface to the DaisyDriver open-hardware microscope controller.
 #### Features
 + Motor control - natural mapped buttons provide tactile interface to the motors
 + Preview feed - see where you are on the sample
 + Timed image capture - for longer experiments
++ Light switches on before capture sequence and off afterward
 
-Current version: 1.03
+Current version: 1.0
 
 *Documentation in progress.* Camera timer appears to be working well but the camera itself struggles with smaller intervals between pictures (approx. 1/2 seconds) for a long period of time (approx. 30 seconds). Taking less pictures at this short interval, or using a longer interval are two possible ways of overcoming this issue.
 
