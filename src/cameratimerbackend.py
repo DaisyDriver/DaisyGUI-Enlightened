@@ -2,6 +2,7 @@ from threading import Timer, Thread
 from time import time
 
 class RepeatedTimer():
+	
 	def __init__(self, interval, function, timelimit = None, countlimit = None, callback = None):
 		# announce interval to class
 		self.interval = interval
@@ -17,13 +18,10 @@ class RepeatedTimer():
 			
 		assert not ((timelimit is None) and (countlimit is None)), 'Time limit xor count limit must be defined'
 		
-		# announce countlimit
-		self.countlimit = countlimit
-		
 		if timelimit is not None:
 			# announce timelimit
 			self.timelimit = timelimit
-		elif self.countlimit is not None:
+		elif countlimit is not None:
 			# convert countlimit to timelimit 
 			self.timelimit = self.interval*countlimit - self.interval/2
 			
@@ -61,6 +59,9 @@ class RepeatedTimer():
 		
 		# set state as running
 		self.is_active = 1
+		
+		# re-initialise timer interrupt
+		self.is_running = False
 	
 		# get starting time for time limit
 		self.time_init = time()
@@ -78,10 +79,11 @@ class RepeatedTimer():
 	  
 		self._timer.cancel()
 		
-		self.is_running = False
+		self.is_running = True
 		
 		if self.callback is not None:
 			self.callback()
 			
 		# set state as not running
 		self.is_active = 0
+		

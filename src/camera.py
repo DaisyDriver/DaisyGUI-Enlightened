@@ -4,7 +4,7 @@ from pathlib import Path
 from PyQt5.QtCore import pyqtSignal, QObject
 from threading import Lock, Thread
 from src.cameratimerbackend import RepeatedTimer
-from time import sleep, time
+from time import sleep
 
 class FileNameHelper():
 	
@@ -136,7 +136,7 @@ class Camera(PiCamera):
 			# format filename with date/time stamp values if appropriate
 			filename = self.fn.savedir + self.fn.filename_unformat.format(timestamp=datetime.now())
 			
-			print("taken picture at:", time()) 
+			print("taken picture at:", "{timestamp:%H-%M-%S-%f}".format(timestamp=datetime.now())) 
 			
 			# use parent method to capture, *bayer and quality only used for JPG formats*
 			super(Camera, self).capture(filename, format=self.fn.FileFormat, use_video_port=False, bayer=self.fn.bayerInclude, quality=self.fn.JPGquality)
@@ -147,15 +147,17 @@ class Camera(PiCamera):
 		
 		ID = self.lightID
 		
+		if not self.DD.lightval:
+			print("light on at:", "{timestamp:%H-%M-%S-%f}".format(timestamp=datetime.now())) 
+					
 		self.DD.light_on()
-		print("light on at:", time()) 
 		
 		sleep(7)
 		
 		# check if another thread started. If not, switch off light
 		if ID == self.lightID:
 			self.DD.light_off()
-			print("light off at:", time()) 
+			print("light off at:", "{timestamp:%H-%M-%S-%f}".format(timestamp=datetime.now())) 
 			
 	def start_timed_capture(self):
 		# special case for only 1 picture
@@ -181,15 +183,13 @@ class Camera(PiCamera):
 	
 	def start_timed_capture_bang(self):
 		# get light thread and start
-		self.timedlightthread = Thread(target = self.maintimer_light.start_all)
-		self.timedlightthread.start()
+		self.maintimer_light.start_all()
 		
 		# wait for camera to adust to light before taking each picture
 		sleep(5)
 		
 		# get camera thread and start
-		self.timedcapturethread = Thread(target = self.maintimer.start_all)
-		self.timedcapturethread.start()
+		self.maintimer.start_all()
 		
 	def stop_timed_capture(self):
 		# stop timed capture, timer may not be running so have to try/except
@@ -214,5 +214,5 @@ class Camera(PiCamera):
 		except AttributeError:
 			pass			
 			
-		self.timedcapturethread.join()
+		#~ self.timedcapturethread.join()
 		#~ print('Timer thread succesfully stopped.')
